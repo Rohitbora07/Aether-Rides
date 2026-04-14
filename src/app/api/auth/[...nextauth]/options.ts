@@ -60,7 +60,7 @@ export const authOption: NextAuthConfig = {
                         email: user.email,
                     })
                 }
-                user.id = existingUser?._id.toString() || user.id
+                user.id = existingUser?._id.toString()
                 user.role = existingUser?.role || "user"
             }
             return true

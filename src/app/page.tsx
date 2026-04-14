@@ -1,9 +1,14 @@
+import PublicHome from "@/components/home/PublicHome";
+import Footer from "@/components/layout/Footer";
+import Nav from "@/components/layout/Nav";
 
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      Hello
+    <div className=" w-full min-h-screen bg-white ">
+      <Nav />
+      <PublicHome />
+      <Footer />
     </div>
   );
 }
