@@ -2,7 +2,7 @@
 import React from 'react'
 import HeroSection from './HeroSection'
 import VehicleSlider from './VehicleSlider'
-import AuthModal from '../auth/AuthModal'
+import AuthModal from '../../auth/components/AuthModal'
 import { useState } from 'react'
 
 
@@ -12,7 +12,7 @@ const PublicHome = () => {
 
     return (
         <div>
-            <HeroSection />
+            <HeroSection authRequired={() => setAuthModalOpen(true)} />
             <VehicleSlider />
             <AuthModal open={authModalOpen} onClose={() => setAuthModalOpen(false)} />
         </div>
