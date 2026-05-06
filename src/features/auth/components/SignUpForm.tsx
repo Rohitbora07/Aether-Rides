@@ -5,7 +5,7 @@ import { AuthMode } from '../types';
 import axios from 'axios';
 import { SIGNUP_ROUTE } from '@/constants/routes';
 
-const SignUpForm = ({ setAuthMode }: { setAuthMode: (mode: AuthMode) => void }) => {
+const SignUpForm = ({ setUserEmail, setAuthMode }: { setUserEmail: (email: string) => void; setAuthMode: (mode: AuthMode) => void }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -17,9 +17,10 @@ const SignUpForm = ({ setAuthMode }: { setAuthMode: (mode: AuthMode) => void }) 
         e.preventDefault();
         try{
             const {data} = await axios.post(SIGNUP_ROUTE, {name, email, password})
+            setAuthMode("otp")
+            setUserEmail(email)
             console.log("Registration successful", data.user);
         }catch (error:any) {
-            // console.log(error.response?.data?.message)
             setErr(error.response?.data?.message || "Registration failed");
         }finally{
             setLoading(false);

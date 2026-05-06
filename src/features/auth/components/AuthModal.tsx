@@ -6,19 +6,20 @@ import LoginForm from './LoginForm';
 import SignUpForm from './SignUpForm';
 import Modal from '@/components/ui/Modal';
 import { signIn, useSession } from 'next-auth/react';
+import Otp from './Otp';
 
 type AuthModalPropsType = {
     open: boolean;
     onClose: () => void;
 }
 const AuthModal = ({ open, onClose }: AuthModalPropsType) => {
-
     const [authMode, setAuthMode] = useState<AuthMode>("login")
+    const [email, setEmail] = useState("")
     const handleGoogleLogin = async () => {
         await signIn("google")
     }
-    const {data} = useSession()
-    console.log(data)
+    
+    // console.log(data)
     return (
         <>
             {
@@ -34,8 +35,13 @@ const AuthModal = ({ open, onClose }: AuthModalPropsType) => {
                                 <LoginForm setAuthMode={setAuthMode} />
                             )}
                             {authMode === "signup" && (
-                                <SignUpForm setAuthMode={setAuthMode} />
+                                <SignUpForm setUserEmail={setEmail} setAuthMode={setAuthMode} />
                             )}
+                            {
+                                authMode === "otp" && (
+                                    <Otp email={email} setAuthMode={setAuthMode} />
+                                )
+                            }
                             <div className="flex items-center gap-4 my-6">
                                 <div className="flex-1 h-px bg-black/10"></div>
                                 <div className="text-xs text-gray-500">OR</div>

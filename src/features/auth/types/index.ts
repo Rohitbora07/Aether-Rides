@@ -1,2 +1,2 @@
-export type AuthMode = "login" | "signup"
+export type AuthMode = "login" | "signup" | "otp"
 export type setAuthModeType = (mode: AuthMode) => void
