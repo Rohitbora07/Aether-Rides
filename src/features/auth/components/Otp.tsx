@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { motion } from 'motion/react';
 import axios from 'axios';
 import { VERIFY_EMAIL_ROUTE } from '@/constants/routes';
+import {signOut} from 'next-auth/react'
 import {CircleDashed} from 'lucide-react';
 
 type OtpProps = {
@@ -32,6 +33,7 @@ const Otp = ({ email, setAuthMode }: OtpProps) => {
         e.preventDefault();
         try{
             const {data} = await axios.post(VERIFY_EMAIL_ROUTE, {email,otp: otp.join("")})
+            signOut({redirect: false})
             setAuthMode("login")
             console.log("Registration successful", data);
             setErr("");
