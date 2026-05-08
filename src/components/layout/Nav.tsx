@@ -7,9 +7,10 @@ import { usePathname } from 'next/navigation'
 import AuthModal from '../../features/auth/components/AuthModal'
 import { useDispatch, useSelector } from 'react-redux'
 import { AppDispatch, RootState } from '@/redux/store'
-import { Bike, Car, ChevronRight, LogOut, Menu, Truck, X } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { setUserData } from '@/redux/userSlice'
+import ProfileMenu from './ProfileMenu'
 
 const Nav_Items = ["Home", "Bookings", "About Us", "Contact"]
 
@@ -33,7 +34,7 @@ const Nav = () => {
                 animate={{ y: 0, opacity: 1 }}
                 className={`fixed top-3 left-1/2 -translate-x-1/2 w-[94%] md:w-[86%] z-50 rounded-full bg-[#0B0B0B] text-white shadow-[0_15px_50px_rgba(0,0,0,0.7)] py-1`}
             >
-                <div className='max-w-7x1 mx-auto px-4 md:px-8 flex items-center justify-between'>
+                <div className='max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between'>
                     <Image src={"/logo.png"} alt='logo' width={140} height={140} priority />
                     <div className='hidden md:flex items-center gap-10' >
                         {Nav_Items.map((item, index) => {
@@ -62,34 +63,8 @@ const Nav = () => {
                                             <motion.div initial={{ opacity: 0, y: -10 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: -10 }}
-                                                className=' text-black absolute top-14 right-0 w-75 bg-white rounded-2xl shadow-xl py-2 border '>
-                                                <div className=' p-5' >
-                                                    <p className='font-semibold text-1g'>{userData.name}</p>
-                                                    <p className='text-xs uppercase [text-gray-500 mb-4'>
-                                                        {userData.role}</p>
-                                                    {userData.role !== "partner" && (
-                                                        <div className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-x1'>
-                                                            <div className='flex -space-x-2'>
-                                                                <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Bike
-                                                                    size={14} /></div>
-                                                                <div className='w-6 h-6 rounded-full bg-black
-                                                                                text-white flex items-center justify-center'><Car
-                                                                        size={14} /></div>
-                                                                <div className='w-6 h-6 rounded-full bg-black
-                                                                                text-white flex items-center
-                                                                                justify-center'><Truck size={14} /></div>
-
-                                                            </div>
-                                                            Become a Partner
-                                                            <ChevronRight size={16} className='ml-auto' />
-                                                        </div>
-                                                    )
-                                                    }
-                                                    <button className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-x1 mt-2' onClick={handleLogOut}>
-                                                        <LogOut size={16} />
-                                                        Logout
-                                                    </button>
-                                                </div>
+                                                className=' text-black absolute top-14 right-0 w-72 bg-white rounded-2xl shadow-xl py-2 border '>
+                                                <ProfileMenu userData={userData} handleLogOut={handleLogOut} />
                                             </motion.div>
                                         )
                                         }
@@ -166,33 +141,13 @@ const Nav = () => {
                             transition={{ type: "spring", damping: 25 }}
                             className="fixed inset-x-0 bottom-0 bg-white rounded-t-3xl shadow-2xl z-50 md:hidden"
                         >
-                            <div className=' p-5' >
-                                <p className='font-semibold text-1g'>{userData.name}</p>
-                                <p className='text-xs uppercase [text-gray-500 mb-4'>
-                                    {userData.role}</p>
-                                {userData.role !== "partner" && (
-                                    <div className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-x1'>
-                                        <div className='flex -space-x-2'>
-                                            <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'> <Bike
-                                                size={14} /></div>
-                                            <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'><Car size={14} /></div>
-                                            <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'><Truck size={14} /></div>
-                                        </div>
-                                        Become a Partner
-                                        <ChevronRight size={16} className='ml-auto' />
-                                    </div>
-                                )
-                                }
-                                <button className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-x1 mt-2' onClick={handleLogOut}>
-                                    <LogOut size={16} />
-                                    Logout
-                                </button>
-                            </div>
+                            <ProfileMenu userData={userData} handleLogOut={handleLogOut} />
                         </motion.div>
                     </>
                 )}
             </AnimatePresence>
-            <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} /></>
+            <AuthModal open={authOpen} onClose={() => setAuthOpen(false)} />
+        </>
     )
 }
 
