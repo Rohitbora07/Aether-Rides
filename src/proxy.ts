@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "./lib/auth";
 
+
+// ROUTES THAT DON'T NEED LOGIN
+//  These pages are public.
+// Anyone can access them without authentication.
+
 const PUBLIC_ROUTES = ["/"];
 const PUBLICE_APIS = ["/api/auth"];
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
-    console.log(req.nextUrl);
+
+    // SKIP NEXT.JS INTERNAL FILES
     if (
         pathname.startsWith("/_ next") ||
         pathname.startsWith("/favicon.ico") ||
@@ -14,9 +20,17 @@ export async function proxy(req: NextRequest) {
         return NextResponse.next();
     }
 
+
+    // ALLOW PUBLIC API ROUTES
+    // If current path exists in PUBLIC_APIS, then allow access without login.
+
     if (PUBLICE_APIS.includes(pathname)) {
         return NextResponse.next();
     }
+
+    // ALLOW PUBLIC PAGES
+    // If route is public
+    // Example: "/", then don't check authentication.
     if (PUBLIC_ROUTES.includes(pathname)) {
         return NextResponse.next();
     }
@@ -45,9 +59,7 @@ export async function proxy(req: NextRequest) {
     if (pathname.startsWith("/api")) {
         if (!session.user) {
             return Response.json(
-                {
-                    message: "Unauthorized",
-                },
+                {message: "Unauthorized",},
                 { status: 401 },
             );
         }
