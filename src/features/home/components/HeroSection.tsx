@@ -45,7 +45,7 @@ const HeroSection = ({authRequired}: { authRequired: () => void }) => {
                     transition={{ duration: 1.5 }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.9 }}
-                    className=' mt-12 px-10 py-4 bg-white text-black rounded-full font-semibold shadow-x1'
+                    className=' mt-12 px-10 py-4 bg-white text-black rounded-full font-semibold shadow-xl'
                     onClick={authRequired}
                 >
                     Book Now
