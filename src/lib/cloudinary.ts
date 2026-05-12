@@ -6,20 +6,34 @@ cloudinary.config({
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
+// Before sending to Cloudinary:
+
+// Blob/File → ArrayBuffer
+// ArrayBuffer → Buffer
+// Buffer → Cloudinary stream
+
 
 const uploadOnCloudinary = async (file: Blob): Promise<string | null> => {
     if (!file) return null;
     try {
+
+        // File/Blob data cannot be directly uploaded to Cloudinary stream so first convert it into ArrayBuffer (raw binary data)
         const arrayBuffer = await file.arrayBuffer();
+
+         // Cloudinary upload_stream works with Node.js Buffer therefore convert ArrayBuffer -> Buffer
         const buffer = Buffer.from(arrayBuffer);
 
         return new Promise((resolve, reject) => {
             const uploadStream = cloudinary.uploader.upload_stream(
+                // auto automatically detects image/video/pdf/etc
                 { resource_type: "auto" },
+
+                // Runs after upload completes
                 (error, result) => {
                     if (error) {
                         reject(error);
                     } else {
+                        // secure_url is the uploaded file URL from Cloudinary
                         resolve(result?.secure_url ?? null);
                     }
                 })
