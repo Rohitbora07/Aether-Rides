@@ -1,14 +1,66 @@
 'use client'
-import { ArrowLeft, UploadCloud, FileCheck } from "lucide-react"
+import { ONBOARDING_DOCUMENTS } from "@/constants/routes"
+import axios from "axios"
+import { ArrowLeft, UploadCloud, FileCheck, CircleDashed } from "lucide-react"
 import { motion } from "motion/react"
 import { useRouter } from "next/navigation"
 
-import React from 'react'
+import React, { useState } from 'react'
 
+
+type DocType = "aadhaar" | "license" | "rc"
 function Page() {
     const router = useRouter()
+    const [docs, setDocs] = useState<Record<DocType, File | null>>({
+        aadhaar: null,
+        license: null,
+        rc: null
+    })
+    const [err, setErr] = useState("")
+    const [loading, setLoading] = useState(false)
+
+    const handleImage = (doc: DocType, file: File | null) => {
+        if (!file) return
+        setDocs(prev => ({
+            ...prev,
+            [doc]: file
+        }))
+    }
+
+    
+
+    const handleDocs = async () => {
+        setErr("")
+        try {
+            setLoading(true)
+            const formData = new FormData()
+            if (!docs.aadhaar || !docs.license || !docs.rc) {
+                setErr("All documents are required")
+                setLoading(false)
+                return
+            }
+            formData.append("aadharCard", docs.aadhaar)
+            formData.append("license", docs.license)
+            formData.append("rc", docs.rc)
+            const { data } = await axios.post(ONBOARDING_DOCUMENTS, formData)
+            console.log(data)
+            router.push("/partner/onboarding/bank")
+            setLoading(false)
+
+        } catch (error: unknown) {
+            if (axios.isAxiosError(error)) {
+                setErr(error?.response?.data?.message ?? "Something went wrong by axios")
+            } else {
+                setErr("Something went wrong")
+            }
+            setLoading(false)
+        }
+    }
+
+    const isCompleted = docs.aadhaar && docs.license && docs.rc
+
     return (
-        <div className="bg-white flex items-center justify-center px-4">
+        <div className="bg-white flex items-center justify-center m-6 px-4">
             <motion.div
                 initial={{ opacity: 0, y: 28 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -27,66 +79,87 @@ function Page() {
                         Step 2 of 3
                     </p>
 
-                    <h1 className="text-2xl font-bold mt-1">
+                    <h1 className="text-2xl font-bold">
                         Upload your Documents
                     </h1>
 
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-gray-500">
                         Required for Verification
                     </p>
                 </div>
 
-                <div className=" mt-8 space-y-5">
+                <div className=" mt-4 space-y-3">
                     <motion.label
                         whileHover={{ scale: 1.02 }}
-                        className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-black transition"
+                        className="flex items-center justify-between p-3 rounded-xl border border-gray-200 cursor-pointer hover:border-black transition"
                     >
                         <div>
                             <p className="text-sm font-semibold">Aadhaar / ID Proof</p>
                             <p className="text-xs text-gray-500">Government issued ID</p>
                         </div>
+                        {
+                            docs.aadhaar ? <span className=" text-green-600 font-medium text-xs" >Uploaded</span> :
+                                (
+                                    <div>
+                                        <span className="text-xs text-gray-400">Upload</span>
 
-                        <div>
-                            <span className="text-xs text-gray-400">Upload</span>
+                                        <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
+                                            <UploadCloud size={14} />
+                                        </div>
+                                    </div>
+                                )
 
-                            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center">
-                                <UploadCloud size={18} />
-                            </div>
-                        </div>
+                        }
+
+                        <input type="file" hidden accept='image/*, .pdf' onChange={(e) => handleImage('aadhaar', e.target.files?.[0] || null)} />
                     </motion.label>
                     <motion.label
                         whileHover={{ scale: 1.02 }}
-                        className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-black transition"
+                        className="flex items-center justify-between p-3 rounded-xl border border-gray-200 cursor-pointer hover:border-black transition"
                     >
                         <div>
                             <p className="text-sm font-semibold">Driving License</p>
                             <p className="text-xs text-gray-500">Valid driving license</p>
                         </div>
 
-                        <div>
-                            <span className="text-xs text-gray-400">Upload</span>
+                        {
+                            docs.license ? <span className=" text-green-600 font-medium text-xs" >Uploaded</span> :
+                                (
+                                    <div>
+                                        <span className="text-xs text-gray-400">Upload</span>
 
-                            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center">
-                                <UploadCloud size={18} />
-                            </div>
-                        </div>
+                                        <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
+                                            <UploadCloud size={14} />
+                                        </div>
+                                    </div>
+                                )
+
+                        }
+                        <input type="file" hidden accept='image/*, .pdf' onChange={(e) => handleImage('license', e.target.files?.[0] || null)} />
                     </motion.label>
                     <motion.label
                         whileHover={{ scale: 1.02 }}
-                        className="flex items-center justify-between p-4 rounded-2xl border border-gray-200 cursor-pointer hover:border-black transition"
+                        className="flex items-center justify-between p-3 rounded-xl border border-gray-200 cursor-pointer hover:border-black transition"
                     >
                         <div>
                             <p className="text-sm font-semibold">Vehicle RC</p>
                             <p className="text-xs text-gray-500">Vehicle registration certificate</p>
                         </div>
 
-                        <div>
-                            <span className="text-xs text-gray-400">Upload</span>
+                        {
+                            docs.rc ? <span className=" text-green-600 font-medium text-xs" >Uploaded</span> :
+                                (
+                                    <div>
+                                        <span className="text-xs text-gray-400">Upload</span>
 
-                            <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center">
-                                <UploadCloud size={18} />
-                            </div>
-                        </div>
+                                        <div className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center">
+                                            <UploadCloud size={14} />
+                                        </div>
+                                    </div>
+                                )
+
+                        }
+                        <input type="file" hidden accept='image/*, .pdf' onChange={(e) => handleImage('rc', e.target.files?.[0] || null)} />
                     </motion.label>
                 </div>
 
@@ -97,13 +170,15 @@ function Page() {
                         Documents are securely stored and manually verified by our team.
                     </p>
                 </div>
-
+                <p className="text-sm text-red-500 mt-2">{err}</p>
                 <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.97 }}
+                    onClick={handleDocs}
+                    disabled={loading || !isCompleted}
                     className="mt-8 w-full h-14 rounded-2xl bg-black text-white font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition"
                 >
-                    Continue
+                    {loading ? <CircleDashed className="text-white animate-spin" size={18} /> : "Continue"}
                 </motion.button>
 
 

@@ -22,7 +22,7 @@ export async function POST(req:NextRequest) {
 
         const { accountHolderName, accountNumber, ifscCode, upiId, mobileNumber } = await req.json()
         if( !accountHolderName || !accountNumber || !ifscCode || !mobileNumber ){
-            return Response.json({message:"All fields except UPI ID are required"},
+            return Response.json({message:"Required fields are missing"},
                 {status:400}
             )
         }
@@ -38,7 +38,6 @@ export async function POST(req:NextRequest) {
             },
             { new: true, upsert: true }
         )
-
         user.mobileNumber = mobileNumber
         if( user.partnerOnboardingStep < 3 ){
             user.partnerOnboardingStep = 3
@@ -57,7 +56,7 @@ export async function POST(req:NextRequest) {
     }
 }
 
-export async function GET(req:NextRequest) {
+export async function GET() {
     try{
         await connectDB()
         const session = await auth()
@@ -78,7 +77,8 @@ export async function GET(req:NextRequest) {
                 {status:404}
             )
         }
-        return Response.json(partnerBank,
+        return Response.json(
+            {partnerBank, mobileNumber: user.mobileNumber},
             {status:200}
         )
     }catch(error){

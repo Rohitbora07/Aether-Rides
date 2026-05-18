@@ -7,15 +7,14 @@ import { auth } from "./lib/auth";
 // Anyone can access them without authentication.
 
 const PUBLIC_ROUTES = ["/"];
-const PUBLICE_APIS = ["/api/auth"];
 export async function proxy(req: NextRequest) {
     const { pathname } = req.nextUrl;
 
     // SKIP NEXT.JS INTERNAL FILES
     if (
-        pathname.startsWith("/_ next") ||
+        pathname.startsWith("/_next") ||
         pathname.startsWith("/favicon.ico") ||
-        pathname.startsWith(".")
+        /\.(png|jpg|jpeg|gif|webp|svg|ico)$/.test(pathname)
     ) {
         return NextResponse.next();
     }
@@ -24,7 +23,7 @@ export async function proxy(req: NextRequest) {
     // ALLOW PUBLIC API ROUTES
     // If current path exists in PUBLIC_APIS, then allow access without login.
 
-    if (PUBLICE_APIS.includes(pathname)) {
+    if (pathname.startsWith("/api/auth")) {
         return NextResponse.next();
     }
 

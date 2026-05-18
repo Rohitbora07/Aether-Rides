@@ -72,6 +72,14 @@ export const authOption: NextAuthConfig = {
                     token.email = user.email;
                     token.role = user.role
             }
+            await connectDB()
+            const dbUser = await User.findOne({ email: token.email })
+            if (dbUser) {
+                token.id = dbUser._id.toString();
+                token.role = dbUser.role
+                token.name = dbUser.name
+                token.email = dbUser.email
+            }
             return token
         },
         async session({ token, session }) {

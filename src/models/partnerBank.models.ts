@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-interface IPartnerBank {
+export interface IPartnerBank {
     owner: mongoose.Types.ObjectId;
     accountHolderName: string;
     accountNumber: string;
