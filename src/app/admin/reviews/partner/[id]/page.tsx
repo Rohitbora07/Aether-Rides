@@ -3,14 +3,15 @@ import { ADMIN_PARTNER_REVIEWS_ROUTE } from '@/constants/routes'
 import axios from 'axios'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CheckCircle, XCircle, Clock, Car, FileText, Landmark, ShieldCheck, CircleDashed } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, Clock, Car, FileText, Landmark, ShieldCheck } from 'lucide-react'
 import { IUser } from '@/models/user.model'
 import { IVehicle } from '@/models/vehicle.model'
 import { IPartnerDocs } from '@/models/partnerDocs.model'
-import { IPartnerBank } from '@/models/partnerBank.models'
-import AnimatedCard from '@/components/layout/AnimatedCard'
-import DocsPreview from '@/components/layout/DocsPreview'
+import { IPartnerBank } from '@/models/partnerBank.model'
+import AnimatedCard from '@/components/shared/AnimatedCard'
+import DocsPreview from '@/components/shared/DocsPreview'
 import { AnimatePresence, motion } from "motion/react"
+import ReviewStatusCard from '@/components/admin/ReviewStatusCard'
 
 function Page() {
     const { id } = useParams()
@@ -201,88 +202,33 @@ function Page() {
 
                     )}
                 </div>
-
-
-
             </main>
-
             <AnimatePresence>
                 {
                     showApprove && (
-                        <motion.div
-                            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        >
-                            <motion.div
-                                initial={{ scale: 0.9 }}
-                                animate={{ scale: 1 }}
-                                className="bg-white rounded-3xl p-6 w-full max-w-sm"
-                            >
-                                <h2 className="text-lg font-bold">Approve Partner?</h2>
-
-                                <p className="text-sm text-gray-500 mt-2">
-                                    Confirm all information has been verified.
-                                </p>
-
-                                <div className="flex gap-3 mt-6">
-                                    <button
-                                        className="flex-1 py-2 rounded-xl border"
-                                        onClick={() => setShowApprove(false)}
-                                    >Cancel</button>
-                                    <button
-                                    disabled ={approveLoading}
-                                    onClick={handleApprove}
-                                    className="flex-1 py-2 flex items-center justify-center rounded-xl bg-black text-white">
-                                        {approveLoading ? <CircleDashed className=' text-white animate-spin' /> : "Yes, Approve"}
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </motion.div>
+                        <ReviewStatusCard
+                            setStatus={setShowApprove}
+                            loading={approveLoading}
+                            func={handleApprove}
+                            title="Approve Partner?"
+                            description="Confirm all information has been verified."
+                        />
                     )
                 }
             </AnimatePresence>
-
             <AnimatePresence>
                 {
                     showReject && (
-                        <motion.div
-                            className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center px-4"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                        >
-                            <motion.div
-                                initial={{ scale: 0.9 }}
-                                animate={{ scale: 1 }}
-                                className="bg-white rounded-3xl p-6 w-full max-w-sm"
-                            >
-                                <h2 className="text-lg font-bold">Reject Partner?</h2>
-
-                                <p className="text-sm text-gray-500 mt-2">
-                                    <textarea 
-                                        placeholder="Reason for rejection..."
-                                        className="border rounded-xl p-2 w-full text-sm focus:outline-none focus:ring-2 "
-                                        value={rejectionReason}
-                                        onChange={(e) => setRejectionReason(e.target.value)}
-                                    />
-                                </p>
-
-                                <div className="flex gap-3 mt-6">
-                                    <button
-                                        className="flex-1 py-2 rounded-xl border"
-                                        onClick={() => setShowReject(false)}
-                                    >Cancel</button>
-                                    <button
-                                    disabled={rejectLoading || rejectionReason.trim() === ""}
-                                    onClick={handleReject}
-                                    className="flex-1 py-2 flex items-center justify-center rounded-xl bg-black text-white">
-                                        {rejectLoading ? <CircleDashed className=' animate-spin' /> : "Yes, Reject"}
-                                    </button>
-                                </div>
-                            </motion.div>
-                        </motion.div>
+                        <ReviewStatusCard
+                            setStatus={setShowReject}
+                            loading={rejectLoading}
+                            func={handleReject}
+                            title="Reject Partner?"
+                            description="Provide a reason for rejection."
+                            type="rejection"
+                            reason={rejectionReason}
+                            setReason={setRejectionReason}
+                        />
                     )
                 }
             </AnimatePresence>

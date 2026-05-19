@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import connectDB from "@/lib/db";
-import PartnerBank from "@/models/partnerBank.models";
+import PartnerBank from "@/models/partnerBank.model";
 import User from "@/models/user.model";
 import { NextRequest } from "next/server";
 
