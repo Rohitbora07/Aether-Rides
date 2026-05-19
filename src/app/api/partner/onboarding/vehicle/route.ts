@@ -53,6 +53,15 @@ export async function POST(req: NextRequest) {
             vehicle.vehicleNumber = number
             vehicle.vehicleModel = vehicleModel
             vehicle.status = "pending"
+            if (user.partnerOnboardingStep < 2) {
+                user.partnerOnboardingStep = 2
+                user.partnerStatus = "pending"
+                await user.save()
+            } else {
+                user.partnerOnboardingStep = 3
+                user.partnerStatus = "pending"
+                await user.save()
+            }
             await vehicle.save()
             return Response.json(vehicle,
                 { status: 200 }
@@ -67,8 +76,8 @@ export async function POST(req: NextRequest) {
         await newVehicle.save()
         if (user.partnerOnboardingStep < 1) {
             user.partnerOnboardingStep = 1
-
         }
+        user.partnerStatus = "pending"
         user.role = "partner"
         await user.save()
 

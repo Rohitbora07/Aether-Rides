@@ -3,8 +3,10 @@ import React from 'react'
 import { useSelector } from 'react-redux';
 import { motion } from "motion/react"
 import { RootState } from '@/redux/store';
-import { Check, Lock } from 'lucide-react';
+import { Check, Clock, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import RejectionCard from '@/components/layout/RejectionCard';
+import StatusCard from '@/components/layout/StatusCard';
 type Step = {
     id: number;
     title: string;
@@ -16,10 +18,9 @@ const STEPS: Step[] = [
     { id: 2, title: "Documents", route: "/partner/onboarding/documents" },
     { id: 3, title: "Bank", route: "/partner/onboarding/bank" },
     { id: 4, title: "Review" },
-    { id: 5, title: "Video KYC" },
-    { id: 6, title: "Pricing" },
-    { id: 7, title: "Final Review" },
-    { id: 8, title: "Live" },
+    { id: 5, title: "Pricing" },
+    { id: 6, title: "Final Review" },
+    { id: 7, title: "Live" },
 ]
 
 
@@ -33,8 +34,8 @@ function PartnerDashBoard() {
 
     const progressPercentage = ((activeStep - 1) / (TOTAL_STEPS - 1)) * 100
     const router = useRouter()
-    const gotoStep = (step: Step) =>{
-        if( step.route && step.id <= activeStep){
+    const gotoStep = (step: Step) => {
+        if (step.route && step.id <= activeStep) {
             router.push(step.route)
         }
     }
@@ -60,7 +61,7 @@ function PartnerDashBoard() {
                         />
 
                         <div className="relative flex justify-between">
-                            {STEPS.map((s, index) => {
+                            {STEPS.map((s) => {
                                 const completed = s.id < activeStep
                                 const isActive = s.id === activeStep
                                 const locked = s.id > activeStep
@@ -68,7 +69,7 @@ function PartnerDashBoard() {
                                     <motion.div
                                         key={s.id}
                                         whileHover={!locked ? { scale: 1.1 } : {}}
-                                        onClick={()=> gotoStep(s)}
+                                        onClick={() => gotoStep(s)}
                                         className="flex flex-col items-center z-10 cursor-pointer"
                                     >
                                         <div
@@ -99,6 +100,24 @@ function PartnerDashBoard() {
 
                     </div>
                 </div>
+
+                {activeStep === 4 && userData?.partnerStatus === "rejected" && (
+                    <RejectionCard
+                        title="Partner Rejected"
+                        reason={userData?.rejectionReason || ""}
+                        actionLabel="Review and Update"
+                        onAction={() => {
+                            router.push("/partner/onboarding/vehicle")
+                        }}
+                    />
+                )}
+                {activeStep === 4 && userData?.partnerStatus === "pending" && (
+                    <StatusCard
+                        icon={<Clock size={18} />}
+                        title="Documents under review"
+                        desc = {"Admin is verifying your documents. "}
+                    />
+                )}
             </div>
         </div>
     )

@@ -20,7 +20,7 @@ export async function GET() {
         const pendinPartnerUsers = await User.find({
             role: "partner",
             partnerStatus: "pending",
-            partnerOnboardingStep: 3
+            partnerOnboardingStep: { $gte: 3 }
         })
 
         const partnerIds = pendinPartnerUsers.map(user => user._id)

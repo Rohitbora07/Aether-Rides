@@ -37,7 +37,7 @@ function Page() {
                 upiId: upi
             })
             console.log(data)
-            router.push("/partner/dashboard")
+            router.push("/")
             setLoading(false)
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
