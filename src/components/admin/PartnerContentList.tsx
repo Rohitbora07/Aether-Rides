@@ -9,6 +9,10 @@ type PartnerContentListProps = {
         _id: string
         name?: string
         email?: string
+        owner?: {
+            name?: string
+            email?: string
+        }
     }[],
     type: "partner" | "vehicle"
 }
@@ -44,8 +48,8 @@ function PartnerContentList({ data, type }: PartnerContentListProps) {
             </div>
             {
                 data.map((item, index) => {
-                    const name = item.name
-                    const email = item.email
+                    const name = item.name || item.owner?.name
+                    const email = item.email || item.owner?.email
                     return (
                         <motion.div
                             key={index}

@@ -40,7 +40,12 @@ export async function GET() {
             vehicleType: vehicleType.get(String(user._id))
         }))
 
+
+        const pendingVehicles = await Vehicle.find({
+            status: "pending"
+        }).populate("owner", "name email")
         return Response.json({
+            pendingVehicles,
             stats: {
                 totalPartners,
                 totalApprovedPartners,

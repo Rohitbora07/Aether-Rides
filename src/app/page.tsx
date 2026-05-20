@@ -1,9 +1,9 @@
-import PublicHome from "@/features/home/components/PublicHome";
+import PublicHome from "@/features/landing/components/PublicHome";
 import Footer from "@/components/layout/Footer";
 import Nav from "@/components/layout/Nav";
 import { auth } from "@/lib/auth";
-import AdminDashBoard from "@/features/home/components/AdminDashBoard";
-import PartnerDashBoard from "@/features/home/components/PartnerDashBoard";
+import AdminDashBoard from "@/features/admin/components/AdminDashBoard";
+import PartnerDashBoard from "@/features/partner/components/PartnerDashBoard";
 
 
 export default async function Home() {

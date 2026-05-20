@@ -1,12 +1,16 @@
 'use client'
-import React from 'react'
+import {useEffect, useState} from 'react'
 import { useSelector } from 'react-redux';
 import { motion } from "motion/react"
 import { RootState } from '@/redux/store';
 import { Check, Clock, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import RejectionCard from '@/components/layout/RejectionCard';
-import StatusCard from '@/components/layout/StatusCard';
+import RejectionCard from '@/components/partner/RejectionCard';
+import StatusCard from '@/components/partner/StatusCard';
+import PricingModal from '@/components/partner/PricingModal';
+import { IVehicle } from '@/models/vehicle.model';
+import { ONBOARDING_PRICE } from '@/constants/routes';
+import axios from 'axios';
 type Step = {
     id: number;
     title: string;
@@ -35,10 +39,29 @@ function PartnerDashBoard() {
     const progressPercentage = ((activeStep - 1) / (TOTAL_STEPS - 1)) * 100
     const router = useRouter()
     const gotoStep = (step: Step) => {
+        if( step.id === 5 && userData?.partnerStatus === "approved"){
+            setShowPricing(true)
+            return
+        } 
         if (step.route && step.id <= activeStep) {
             router.push(step.route)
         }
     }
+    const [showPricing, setShowPricing] = useState(false)
+    const [vehicleData, setVehicleData] = useState<IVehicle | null>(null)
+
+
+    useEffect(() => {
+        const handleGetPricing = async () => {
+        try{
+            const { data } = await axios.get(ONBOARDING_PRICE)
+            setVehicleData(data)
+        }catch(error){
+            console.log("Error fetching pricing data:", error)
+        }
+    }
+        handleGetPricing()
+    },[])
 
     return (
         <div className="min-h-screen bg-linear-to-br from-gray-100 to-gray-200 px-4 pt-28 pb-20">
@@ -118,7 +141,31 @@ function PartnerDashBoard() {
                         desc = {"Admin is verifying your documents. "}
                     />
                 )}
+
+                {activeStep === 6 && vehicleData?.status === "pending" && (
+                    <StatusCard
+                        icon={<Clock size={18} />}
+                        title="Pricing under review"
+                        desc = {"Admin is verifying your pricing details. "}
+                    />
+                )}
+                {activeStep === 6 && vehicleData?.status === "rejected" && (
+                    <RejectionCard
+                        title="Pricing Rejected"
+                        reason={vehicleData?.rejectionReason || ""}
+                        actionLabel="Edit Pricing"
+                        onAction={() => {
+                            router.push("/partner/onboarding/vehicle")
+                        }}
+                    />
+                )}
             </div>
+
+            <PricingModal
+            open = {showPricing}
+            onClose = {() => setShowPricing(false)}
+            data = {vehicleData}
+            />
         </div>
     )
 }

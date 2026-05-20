@@ -1,13 +1,13 @@
 'use client'
-import Kpi from '@/components/layout/Kpi'
-import TabButton from '@/components/layout/TabButton'
+import Kpi from '@/components/admin/Kpi'
+import TabButton from '@/components/admin/TabButton'
 import { ADMIN_DASHBOARD_ROUTE } from '@/constants/routes'
 import axios from 'axios'
 import { User, Users, CheckCircle2, Clock, XCircle, Truck } from 'lucide-react'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from "motion/react"
-import PartnerContentList from '@/components/layout/PartnerContentList'
+import PartnerContentList from '@/components/admin/PartnerContentList'
 
 type Stats = {
     totalPartners: number,
@@ -27,8 +27,10 @@ function AdminDashBoard() {
     const handlePartnerGet = async () => {
         try {
             const { data } = await axios.get(ADMIN_DASHBOARD_ROUTE)
+            console.log(data)
             setStats(data.stats)
             setPartnerReviews(data.pendingPartnersReviews)
+            setVehicleReviews(data.pendingVehicles)
         } catch (error) {
             console.error("Error fetching admin dashboard data:", error)
         }
