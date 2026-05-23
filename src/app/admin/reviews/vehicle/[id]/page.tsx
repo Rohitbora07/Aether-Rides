@@ -3,10 +3,9 @@ import { IUser } from '@/models/user.model'
 import { useState, useEffect } from 'react'
 import { VehicleType } from '@/models/vehicle.model'
 import axios from 'axios'
-import type { AxiosError } from 'axios'
 import { useParams, useRouter } from 'next/navigation'
 import { ADMIN_VEHICLE_REVIEWS_ROUTE } from '@/constants/routes'
-import { ArrowLeft, CheckCircle, XCircle, Clock, ImageIcon, Car, FileText, Landmark, ShieldCheck, Truck, IndianRupee } from 'lucide-react'
+import { ArrowLeft, CheckCircle, XCircle, Clock, ImageIcon, ShieldCheck, Truck, IndianRupee } from 'lucide-react'
 import Image from 'next/image'
 import { AnimatePresence, motion } from "motion/react"
 import AnimatedCard from '@/components/shared/AnimatedCard'
@@ -32,15 +31,12 @@ function Page() {
     const { id } = useParams()
     const [partnerData, setPartnerData] = useState<IVehicle | null>(null)
     const [loading, setLoading] = useState(false)
-    const [vehicleDetails, setVehicleDetails] = useState<IVehicle | null>(null)
     const router = useRouter()
     const [showApprove, setShowApprove] = useState(false)
     const [showReject, setShowReject] = useState(false)
     const [rejectionReason, setRejectionReason] = useState("")
     const [approveLoading, setApproveLoading] = useState(false)
     const [rejectLoading, setRejectLoading] = useState(false)
-    const [err, setErr] = useState("")
-    console.log(err)
 
     useEffect(() => {
         const handleGetVehicle = async () => {
@@ -49,7 +45,6 @@ function Page() {
                 const { data } = await axios.get(ADMIN_VEHICLE_REVIEWS_ROUTE + `/${id}`)
                 console.log("Vehicle Review Data:", data)
                 setPartnerData(data.vehicle)
-                setVehicleDetails(data.vehicle)
             } catch (error) {
                 console.error("Error fetching vehicle review data:", error)
             } finally {
@@ -82,7 +77,6 @@ function Page() {
                 router.push("/")
             }catch(error: unknown){
                 console.log("Error rejecting partner:", error)
-                setErr(error as string)
                 setRejectLoading(false)
             }finally{
                 setShowReject(false)
@@ -211,7 +205,6 @@ function Page() {
 
                     )}
                 </div>
-                {/* <p className="text-sm text-red-500">{err}</p> */}
             </main>
 
             <AnimatePresence>
