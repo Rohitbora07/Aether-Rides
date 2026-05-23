@@ -12,6 +12,7 @@ type PartnerContentListProps = {
         owner?: {
             name?: string
             email?: string
+            _id?: string
         }
     }[],
     type: "partner" | "vehicle"
@@ -19,6 +20,7 @@ type PartnerContentListProps = {
 
 function PartnerContentList({ data, type }: PartnerContentListProps) {
     const router = useRouter()
+    console.log(data)
 
     if (data.length === 0) {
         return (
@@ -76,7 +78,7 @@ function PartnerContentList({ data, type }: PartnerContentListProps) {
                                         if(type === "partner"){
                                             router.push(`/admin/reviews/partner/${item._id}`)
                                         }else{
-                                            router.push(`/admin/reviews/vehicle/${item._id}`)
+                                            router.push(`/admin/reviews/vehicle/${item?.owner?._id}`)
                                         }
                                     }}
                                 >

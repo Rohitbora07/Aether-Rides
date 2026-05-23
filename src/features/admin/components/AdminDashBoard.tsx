@@ -15,6 +15,12 @@ type Stats = {
     totalRejectedPartners: number,
     totalPendingPartners: number
 }
+type VehicleStatsType = {
+    totalVehicles: number,
+    totalApprovedVehicles: number,
+    totalRejectedVehicles: number,
+    totalPendingVehicles: number
+}
 
 type Tab = "partner" | "vehicle"
 
@@ -23,6 +29,7 @@ function AdminDashBoard() {
     const [activeTab, setActiveTab] = useState<Tab>("partner")
     const [partnerReviews, setPartnerReviews] = useState([])
     const [vehicleReviews, setVehicleReviews] = useState([])
+    const [vehicleStats, setVehicleStats] = useState<VehicleStatsType | null>(null)
 
     const handlePartnerGet = async () => {
         try {
@@ -31,6 +38,7 @@ function AdminDashBoard() {
             setStats(data.stats)
             setPartnerReviews(data.pendingPartnersReviews)
             setVehicleReviews(data.pendingVehicles)
+            setVehicleStats(data.vehicleStats)
         } catch (error) {
             console.error("Error fetching admin dashboard data:", error)
         }
@@ -65,6 +73,16 @@ function AdminDashBoard() {
                     <Kpi label="Pending Partners" value={stats?.totalPendingPartners} icon={<Clock />} />
 
                     <Kpi label="Rejected Partners" value={stats?.totalRejectedPartners} icon={<XCircle />} />
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+                    <Kpi label="Total Vehicles" value={vehicleStats?.totalVehicles} icon={<Truck />} />
+
+                    <Kpi label="Approved Vehicles" value={vehicleStats?.totalApprovedVehicles} icon={<CheckCircle2 />} />
+
+                    <Kpi label="Pending Vehicles" value={vehicleStats?.totalPendingVehicles} icon={<Clock />} />
+
+                    <Kpi label="Rejected Vehicles" value={vehicleStats?.totalRejectedVehicles} icon={<XCircle />} />
                 </div>
 
 

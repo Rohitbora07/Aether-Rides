@@ -17,6 +17,11 @@ export async function GET() {
         const totalRejectedPartners = await User.countDocuments({ role: "partner", partnerStatus: "rejected" })
         const totalPendingPartners = await User.countDocuments({ role: "partner", partnerStatus: "pending" })
 
+        const totalVehicles = await Vehicle.countDocuments({ baseFare: { $exists: true }, pricePerKm: { $exists: true }, waitingChargePerMin: { $exists: true } })
+        const totalApprovedVehicles = await Vehicle.countDocuments({ status: "approved", baseFare: { $exists: true }, pricePerKm: { $exists: true }, waitingChargePerMin: { $exists: true } })
+        const totalRejectedVehicles = await Vehicle.countDocuments({ status: "rejected", baseFare: { $exists: true }, pricePerKm: { $exists: true }, waitingChargePerMin: { $exists: true } })
+        const totalPendingVehicles = await Vehicle.countDocuments({ status: "pending", baseFare: { $exists: true }, pricePerKm: { $exists: true }, waitingChargePerMin: { $exists: true } })
+
         const pendinPartnerUsers = await User.find({
             role: "partner",
             partnerStatus: "pending",
@@ -42,10 +47,19 @@ export async function GET() {
 
 
         const pendingVehicles = await Vehicle.find({
-            status: "pending"
+            status: "pending",
+            baseFare: { $exists: true },
+            pricePerKm: { $exists: true },
+            waitingChargePerMin: { $exists: true },
         }).populate("owner", "name email")
         return Response.json({
             pendingVehicles,
+            vehicleStats: {
+                totalVehicles,
+                totalApprovedVehicles,
+                totalRejectedVehicles,
+                totalPendingVehicles
+            },
             stats: {
                 totalPartners,
                 totalApprovedPartners,

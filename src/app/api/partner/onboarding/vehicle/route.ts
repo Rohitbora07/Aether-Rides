@@ -109,6 +109,10 @@ export async function GET() {
                 { status: 400 }
             )
         }
+        if( user.partnerOnboardingStep < 1 ){
+            return Response.json({ success: false, vehicle: null},
+                { status: 200 }
+        )}
         const vehicle = await Vehicle.findOne({ owner: user._id })
         if (!vehicle) {
             return Response.json({ message: "Vehicle not found" },
@@ -116,7 +120,7 @@ export async function GET() {
             )
         }
         return Response.json(
-            vehicle,
+            { success: true, vehicle: vehicle },
             { status: 200 }
         )
     } catch (error) {

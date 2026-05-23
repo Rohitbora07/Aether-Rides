@@ -29,7 +29,7 @@ function Page() {
                 vehicleNumber: vehicleNumber,
                 vehicleModel: vehicleModel
             })
-            router.push("/partner/onboarding/documents")
+            router.push("/")
             setLoading(false)
             console.log(data)
         } catch (error: unknown) {
@@ -45,9 +45,11 @@ function Page() {
         const getVehicle = async () => {
             try {
                 const { data } = await axios.get(ONBOARDING_VEHICLE)
-                setVehicleType(data.type)
-                setVehicleModel(data.vehicleModel)
-                setVehicleNumber(data.vehicleNumber)
+                console.log(data)
+                if(!data.vehicle) return
+                setVehicleType(data.vehicle.type)
+                setVehicleModel(data.vehicle.vehicleModel)
+                setVehicleNumber(data.vehicle.vehicleNumber)
                 setErr("")
             } catch (error: unknown) {
                 if (axios.isAxiosError(error)) {

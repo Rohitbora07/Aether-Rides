@@ -154,9 +154,6 @@ function PartnerDashBoard() {
                         title="Pricing Rejected"
                         reason={vehicleData?.rejectionReason || ""}
                         actionLabel="Edit Pricing"
-                        onAction={() => {
-                            router.push("/partner/onboarding/vehicle")
-                        }}
                     />
                 )}
             </div>

@@ -70,6 +70,11 @@ export async function GET() {
                 {status:400}
             )
         }
+        if( user.partnerOnboardingStep < 3 ){
+            return Response.json({partnerBank: null, success: false},
+                {status:200}
+            )
+        }
         const partnerBank = await PartnerBank.findOne({ owner: user._id })
         if( !partnerBank ){
             return Response.json({message:"Bank details not found"},
@@ -77,7 +82,7 @@ export async function GET() {
             )
         }
         return Response.json(
-            {partnerBank, mobileNumber: user.mobileNumber},
+            {partnerBank: partnerBank, mobileNumber: user.mobileNumber},
             {status:200}
         )
     }catch(error){

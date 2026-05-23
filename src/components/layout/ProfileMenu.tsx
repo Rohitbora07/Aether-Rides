@@ -3,6 +3,7 @@
 import React from 'react'
 import { Bike, Car, ChevronRight, LogOut, Truck } from 'lucide-react'
 import { IUser } from '@/models/user.model'
+import { useRouter } from 'next/navigation'
 
 interface Props {
     userData: IUser | null;
@@ -10,6 +11,7 @@ interface Props {
 }
 
 const ProfileMenu = ({ userData, handleLogOut }: Props) => {
+    const router = useRouter()
     return (
         <div className='p-5'>
             <p className='font-semibold text-lg'>{userData?.name}</p>
@@ -19,7 +21,9 @@ const ProfileMenu = ({ userData, handleLogOut }: Props) => {
             </p>
 
             {userData?.role !== "partner" && (
-                <div className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl'>
+                <div
+                onClick={() => router.push("/partner/onboarding/vehicle")}
+                className='w-full flex items-center gap-3 py-3 hover:bg-gray-100 rounded-xl'>
                     <div className='flex -space-x-2'>
                         <div className='w-6 h-6 rounded-full bg-black text-white flex items-center justify-center'>
                             <Bike size={14} />

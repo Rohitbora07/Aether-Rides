@@ -55,6 +55,7 @@ function Page() {
         const getBanckDetails = async () => {
             try {
                 const { data } = await axios.get(ONBOARDING_BANK)
+                if(!data.partnerBank) return
                 setAccountHolderName(data.partnerBank.accountHolderName)
                 setAccountNumber(data.partnerBank.accountNumber)
                 setIfsc(data.partnerBank.ifscCode)
