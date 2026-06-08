@@ -23,7 +23,7 @@ const Nav = () => {
     console.log(userData)
     const dispatch = useDispatch<AppDispatch>()
     const handleLogOut = async () => {
-        await signOut({ redirect: false })
+        await signOut({ redirect: true, callbackUrl: "/" })
         dispatch(setUserData(null))
         setProfileOpen(false)
     }

@@ -8,6 +8,7 @@ import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from "motion/react"
 import PartnerContentList from '@/components/admin/PartnerContentList'
+import { signOut } from 'next-auth/react'
 
 type Stats = {
     totalPartners: number,
@@ -49,6 +50,9 @@ function AdminDashBoard() {
         }
         loadStats()
     }, [])
+    const handleLogOut = async () => {
+        await signOut({ redirect: true, callbackUrl: "/" })
+    }
     return (
         <div className="min-h-screen bg-linear-to-br from-gray-100 to-gray-200">
             <div className="sticky top-0 bg-black backdrop-blur-lg border-b z-40">
@@ -56,12 +60,20 @@ function AdminDashBoard() {
                     <div className="flex items-center gap-3">
                         <Image src={"/logo.png"} alt="logo" width={100} height={100} priority />
                     </div>
-                    <div>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-white text-black">
+                            <User size={14} />
+                            Admin Dashboard
+                        </div>
+                        <button
+                            onClick={handleLogOut}
+                            className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-white text-red-500"
+                        >
+                            <XCircle size={14} />
+                            Log Out
+                        </button>
                     </div>
-                    <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-full bg-white text-black">
-                        <User size={14} />
-                        Admin Dashboard
-                    </div>
+
                 </div>
             </div>
             <main className="max-w-7xl mx-auto px-6 py-12 space-y-16">
