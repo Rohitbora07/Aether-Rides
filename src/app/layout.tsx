@@ -4,7 +4,7 @@ import "./globals.css";
 import Provider from "@/providers/Provider";
 import ReduxProvider from "@/redux/ReduxProvider";
 import InitUser from "@/InitUser";
-
+import "leaflet/dist/leaflet.css";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
