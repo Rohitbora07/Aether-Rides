@@ -1,22 +1,6 @@
 import mongoose, { Document } from "mongoose";
 
-export interface IUser extends Document {
-    name:string;
-    email: string;
-    password? : string;
-    role: "user" | "partner" | "admin"
-    createdAt: Date;
-    isEmailVerified?: boolean;
-    partnerOnboardingStep?: number;
-    partnerStatus?: "pending" | "approved" | "rejected";
-    mobileNumber?: string;
-    rejectionReason?: string;
-    otp?: string;
-    otpExpiresAt?: Date;
-    updatedAt: Date;
-}
-
-const userSchema = new mongoose.Schema<IUser>({
+const userSchema = new mongoose.Schema({
     name:{
         type: String,
         required: true
@@ -55,6 +39,25 @@ const userSchema = new mongoose.Schema<IUser>({
     rejectionReason: {
         type: String
     },
+    socketId: {
+        type: String,
+        default: null
+    },
+    location: {
+        type: {
+            type: String,
+            enum: ["Point"],
+        },
+        coordinates: {
+            type: [Number],
+            default: [0, 0]
+        }
+    },
+    isOnline: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
     mobileNumber: {
         type: String
     },
@@ -66,7 +69,7 @@ const userSchema = new mongoose.Schema<IUser>({
     timestamps: true
 })
 
-
-const User = mongoose.models.User ||  mongoose.model("User", userSchema)
+userSchema.index({location: "2dsphere"})    
+const User = mongoose.model("User", userSchema)
 
 export default User

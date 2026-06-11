@@ -222,7 +222,7 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: searchProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-                        className="absolute bottom-6 left-4 z-500 flex items-center gap-2 bg-white border border-zinc-200 px-3.5 py-2 rounded-xl shadow-lg"
+                        className="absolute bottom-20 left-4 z-500 flex items-center gap-2 bg-white border border-zinc-200 px-3.5 py-2 rounded-xl shadow-lg"
                     >
                         <Navigation2 size={13} className="text-zinc-900" />
                         <span className="text-zinc-900 text-xs font-bold">{km} km</span>
