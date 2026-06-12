@@ -38,6 +38,16 @@ io.on("connection",(socket) => {
         })
     })
 
+    socket.on("updateLocation", async ({userId, latitude, longitude}) => {
+        console.log(`Updating location for user ${userId}: (${latitude}, ${longitude})`)
+        await User.findByIdAndUpdate(userId, {
+            location:{
+                type: "Point",
+                coordinates: [longitude, latitude]
+            }
+        })
+    })
+
     socket.on("disconnect", async () => {
         if( !socket.userId ) return
         await User.findByIdAndUpdate( socket.userId, {

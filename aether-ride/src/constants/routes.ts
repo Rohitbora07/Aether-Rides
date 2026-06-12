@@ -17,3 +17,6 @@ export const ONBOARDING_PRICE = `${ONBOARDING_BASE}/price`;
 export const ADMIN_DASHBOARD_ROUTE = "/api/admin/dashboard";
 export const ADMIN_PARTNER_REVIEWS_ROUTE = "/api/admin/reviews/partner";
 export const ADMIN_VEHICLE_REVIEWS_ROUTE = "/api/admin/reviews/vehicle";
+
+// VEHICLE SEARCH ROUTE
+export const NEARBY_VEHICLES_ROUTE = "/api/vehicles/near-by";
