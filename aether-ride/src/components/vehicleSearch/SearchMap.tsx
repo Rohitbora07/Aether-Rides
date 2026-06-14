@@ -25,7 +25,17 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: searchProps) {
 
     const geoCoding = async (d: string): Promise<[number, number] | null> => {
         try {
-            const { data } = await axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(d)}&limit=1`)
+            const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
+            if (!apiKey) {
+                console.error("GEOAPIFY API key is not set")
+                return null
+            }
+            const params = new URLSearchParams({
+                text: d,
+                apiKey: apiKey
+            })
+            const url = `https://api.geoapify.com/v1/geocode/search?${params.toString()}`
+            const { data } = await axios.get(url)
             console.log(data)
             if (!data.features || data.features.length === 0) return null
             const [lon, lat] = data.features[0].geometry.coordinates
@@ -63,7 +73,18 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: searchProps) {
 
     const locationFinder = async (lat: number, lon: number) => {
         try{
-            const { data } = await axios.get(`https://api.geoapify.com/v1/geocode/reverse?lat=${lat}&lon=${lon}&apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY}`)
+            const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
+            if(!apiKey) {
+                console.error("GEOAPIFY API key is not set")
+                return null
+            }
+            const params = new URLSearchParams({
+                lat: lat.toString(),
+                lon: lon.toString(),
+                apiKey: apiKey
+            })
+            const url = `https://api.geoapify.com/v1/geocode/reverse?${params.toString()}`
+            const { data } = await axios.get(url)
             if( !data.features.length ) return 
                 const p = data.features[0].properties
                 return [p.formatted]

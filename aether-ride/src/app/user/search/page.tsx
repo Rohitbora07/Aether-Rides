@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'motion/react'
 import { ArrowLeft, MapPin, Navigation, Bike, Car, Truck, Zap, Search, RefreshCcw } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import SearchMap from '@/components/vehicleSearch/SearchMap'
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
 import { NEARBY_VEHICLES_ROUTE } from '@/constants/routes'
 import VehicleCard from '@/components/vehicleSearch/vehicleCard'
 import {VehicleType} from '@/models/vehicle.model'
@@ -18,6 +18,7 @@ const VEHICLE_META = {
 }
 
 type IVehicle = {
+    _id: string;
     owner: string;
     type: VehicleType;
     vehicleNumber: string;
@@ -38,11 +39,14 @@ function Page() {
     const params = useSearchParams()
     const mobile = params.get('mobile')
     const vehicle = params.get('vehicle')
-    const pickupLat = params.get('pickuplat')
-    const pickupLon = params.get('pickuplon')
-    const dropLat = params.get('droplat')
-    const dropLon = params.get('droplon')
-    const [pickUp, setPickUp] = useState(params.get('pickup') || '')
+    console.log("vehicle", vehicle)
+    const pickUpLat = params.get('pickUpLat')
+    const pickUpLon = params.get('pickUpLon')
+    console.log("pickUpLat", pickUpLat)
+    console.log("pickUpLon", pickUpLon)
+    const dropLat = params.get('dropLat')
+    const dropLon = params.get('dropLon')
+    const [pickUp, setPickUp] = useState(params.get('pickUp') || '')
     const [drop, setDrop] = useState(params.get('drop') || '')
     const [km, setKm] = useState(0)
     const [nearbyVehicles, setNearbyVehicles] = useState<IVehicle[]>([])
@@ -60,17 +64,18 @@ function Page() {
             setNearbyVehicles(data.vehicles || [])
             setLoading(false)
         } catch (err) {
-            console.error("Error fetching nearby vehicles:", err)
+            const error = err as AxiosError<{ message: string }>
+            console.error("Error fetching nearby vehicles:", error?.response?.data.message)
             setLoading(false)
         }
     }
 
     useEffect(() => {
         (async () => {
-            await getNearbyVehicles(Number(pickupLat), Number(pickupLon), vehicle)
+            await getNearbyVehicles(Number(pickUpLat), Number(pickUpLon), vehicle)
         }
         )()
-    }, [pickupLat, pickupLon, vehicle, pickUp])
+    }, [pickUpLat, pickUpLon, vehicle, pickUp])
 
     return (
         <div className="min-h-screen bg-zinc-100 text-zinc-900 overflow-x-hidden">
@@ -206,7 +211,7 @@ function Page() {
                                 </p>
                                 <motion.button
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => getNearbyVehicles(Number(pickupLat), Number(pickupLon), vehicle)}
+                                    onClick={() => getNearbyVehicles(Number(pickUpLat), Number(pickUpLon), vehicle)}
                                     className="mt-5 flex items-center gap-2 bg-zinc-900 text-white text-sm font-semibold px-6 py-2.5 rounded-xl hover:bg-zinc-800 transition-colors"
                                 >
                                     <RefreshCcw size={14} />
@@ -234,15 +239,16 @@ function Page() {
                                 onBook={
                                     () => {
                                         const url = new URLSearchParams({
-                                            vehicleId: v.type,
-                                            pickup: pickUp,
+                                            vehicleType: v.type,
+                                            pickUp: pickUp,
+                                            vehicleId: v._id,
                                             drop: drop,
                                             driverId: v.owner,
-                                            fare: String((v.baseFare ?? 0) + (v.pricePerKm ?? 0) * km),
-                                            pickuplat: String(pickupLat),
-                                            pickuplon: String(pickupLon),
-                                            droplat: String(dropLat),
-                                            droplon: String(dropLon),
+                                            fare: Math.round((v.baseFare ?? 0) + (v.pricePerKm ?? 0) * km).toString(),
+                                            pickUpLat: String(pickUpLat),
+                                            pickUpLon: String(pickUpLon),
+                                            dropLat: String(dropLat),
+                                            dropLon: String(dropLon),
                                             mobile: String(mobile)
                                         })
                                         router.push(`/user/checkout?${url.toString()}`)

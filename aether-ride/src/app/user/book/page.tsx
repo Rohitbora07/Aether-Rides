@@ -32,7 +32,7 @@ type Place = {
 }
 type PhotonFeature = {
     properties: {
-        osm_id: number
+        place_id: string
         name?: string
         city?: string
         state?: string
@@ -47,31 +47,42 @@ type PhotonFeature = {
 function Page() {
     const router = useRouter()
     const [vehicle, setVehicle] = useState<VehicleType | undefined>(undefined)
-    const [pickupLocation, setPickupLocation] = useState("")
+    const [pickUpLocation, setpickUpLocation] = useState("")
     const [dropLocation, setDropLocation] = useState("")
     const [mobileNumber, setMobileNumber] = useState("")
     const [pickUpCountry, setPickUpCountry] = useState("")
-    const [pickUpLat, setPickUpLat] = useState<number | undefined>()
-    const [pickUpLon, setPickUpLon] = useState<number | undefined>()
+    const [pickUpLat, setpickUpLat] = useState<number | undefined>()
+    const [pickUpLon, setpickUpLon] = useState<number | undefined>()
     const [dropCity, setDropCity] = useState("")
-    const [dropLat, setDropLat] = useState<number | undefined>()
-    const [dropLon, setDropLon] = useState<number | undefined>()
+    const [dropLat, setdropLat] = useState<number | undefined>()
+    const [dropLon, setdropLon] = useState<number | undefined>()
     const [locating, setLocating] = useState(false)
     const [pickUpSuggestions, setPickUpSuggestions] = useState<Place[] | undefined>([])
     const [dropSuggestions, setDropSuggestions] = useState<Place[] | undefined>([])
-    const progress = [!!pickupLocation, !!dropLocation, !!(mobileNumber.length === 10), !!vehicle].filter(Boolean).length
+    const progress = [!!pickUpLocation, !!dropLocation, !!(mobileNumber.length === 10), !!vehicle].filter(Boolean).length
 
     const currentLocation = () => {
         if (!navigator.geolocation) return
         setLocating(true)
         navigator.geolocation.getCurrentPosition(async ({ coords }) => {
             try {
-                const { data } = await axios.get(`https://api.geoapify.com/v1/geocode/reverse?lat=${coords.latitude}&lon=${coords.longitude}&apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY}`)
+                const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
+                if (!apiKey) {
+                    setLocating(false)
+                    return
+                }
+                const params = new URLSearchParams({
+                    lat: coords.latitude.toString(),
+                    lon: coords.longitude.toString(),
+                    apiKey,
+                })
+                const url = `https://api.geoapify.com/v1/geocode/reverse?${params}`
+                const { data } = await axios.get(url)
                 const p = data.features[0].properties
-                setPickupLocation(p.formatted)
+                setpickUpLocation(p.formatted)
                 setPickUpCountry(p.country)
-                setPickUpLat(coords.latitude)
-                setPickUpLon(coords.longitude)
+                setpickUpLat(coords.latitude)
+                setpickUpLon(coords.longitude)
                 setLocating(false)
             } catch (err) {
                 console.error(err)
@@ -80,18 +91,30 @@ function Page() {
         })
     }
 
-    const searchAddress = async (query: string, setResults: (r: Place[]) => void, restrict: string | undefined) => {
+    const searchAddress = async (query: string, setResults: (r: Place[]) => void) => {
         try {
             if (!query || query.trim().length < 3) {
                 setResults([])
                 return
             }
-            const { data } = await axios.get(
-                `https://photon.komoot.io/api/?q=${encodeURIComponent(query)}&limit=15`
-            )
+            const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
+            if (!apiKey) {
+                setResults([])
+                return
+            }
+
+            const params = new URLSearchParams({
+                text: query.trim(),
+                limit: "10",
+                filter: "countrycode:in",
+                apiKey,
+            });
+
+            const url = `https://api.geoapify.com/v1/geocode/autocomplete?${params}`;
+            const { data } = await axios.get(url)
             console.log(data)
-            let results: Place[] = (data.features ?? []).map((f: PhotonFeature) => ({
-                id: f.properties.osm_id.toString(),
+            const results: Place[] = (data.features ?? []).map((f: PhotonFeature) => ({
+                id: f.properties.place_id,
                 name: f.properties.name,
                 city: f.properties.city,
                 state: f.properties.state,
@@ -99,10 +122,7 @@ function Page() {
                 lat: f.geometry.coordinates[1],
                 lon: f.geometry.coordinates[0],
                 country_code: f.properties.countrycode,
-            }))
-            if (restrict) {
-                results = results.filter(r => r.country?.toLowerCase() === restrict.toLowerCase())
-            }
+            }))         
             setResults(results)
         } catch (err) {
             console.error(err)
@@ -111,7 +131,7 @@ function Page() {
     }
 
     const suggestion = (p: Place) => [p.name, p.city, p.state, p.country].filter(Boolean).join(", ")
-    const canContinue = !!(vehicle && pickupLocation && dropLocation && mobileNumber.length === 10 && pickUpLat && pickUpLon && dropLat && dropLon)
+    const canContinue = !!(vehicle && pickUpLocation && dropLocation && mobileNumber.length === 10 && pickUpLat && pickUpLon && dropLat && dropLon)
 
     return (
         <div className="min-h-screen bg-zinc-100 flex items-center justify-center px-4 py-10">
@@ -302,11 +322,11 @@ function Page() {
                                             </div>
                                             <textarea
                                                 onChange={(e) => {
-                                                    setPickupLocation(e.target.value)
-                                                    searchAddress(e.target.value, setPickUpSuggestions, undefined)
+                                                    setpickUpLocation(e.target.value)
+                                                    searchAddress(e.target.value, setPickUpSuggestions)
                                                 }
                                                 }
-                                                value={pickupLocation}
+                                                value={pickUpLocation}
                                                 placeholder="Pickup location"
                                                 className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none"
                                             />
@@ -335,10 +355,10 @@ function Page() {
                                                             animate={{ opacity: 1 }}
                                                             transition={{ delay: i * 0.03 }}
                                                             onClick={() => {
-                                                                setPickupLocation(suggestion(p))
+                                                                setpickUpLocation(suggestion(p))
                                                                 setPickUpCountry(p.country ?? "")
-                                                                setPickUpLat(p.lat)
-                                                                setPickUpLon(p.lon)
+                                                                setpickUpLat(p.lat)
+                                                                setpickUpLon(p.lon)
                                                                 setPickUpSuggestions([])
                                                             }}
                                                             className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0"
@@ -379,7 +399,7 @@ function Page() {
                                             <textarea
                                                 onChange={(e) => {
                                                     setDropLocation(e.target.value)
-                                                    searchAddress(e.target.value, setDropSuggestions, pickUpCountry || undefined)
+                                                    searchAddress(e.target.value, setDropSuggestions)
                                                 }
                                                 }
                                                 disabled={!pickUpCountry}
@@ -406,8 +426,8 @@ function Page() {
                                                             onClick={() => {
                                                                 setDropLocation(suggestion(p))
                                                                 setDropCity(p.city ?? "")
-                                                                setDropLat(p.lat)
-                                                                setDropLon(p.lon)
+                                                                setdropLat(p.lat)
+                                                                setdropLon(p.lon)
                                                                 setDropSuggestions([])
                                                             }}
                                                             className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0"
@@ -452,7 +472,7 @@ function Page() {
                                 whileHover={canContinue ? { scale: 1.02 } : {}}
                                 disabled={!canContinue}
                                 onClick={() => {
-                                    router.push(`/user/search?pickup=${encodeURIComponent(pickupLocation)}&drop=${encodeURIComponent(dropLocation)}&vehicle=${vehicle}&mobile=${encodeURIComponent(mobileNumber)}&pickuplat=${pickUpLat}&pickuplon=${pickUpLon}&droplat=${dropLat}&droplon=${dropLon}`)
+                                    router.push(`/user/search?pickUp=${encodeURIComponent(pickUpLocation)}&drop=${encodeURIComponent(dropLocation)}&vehicle=${vehicle}&mobile=${encodeURIComponent(mobileNumber)}&pickUpLat=${pickUpLat}&pickUpLon=${pickUpLon}&dropLat=${dropLat}&dropLon=${dropLon}`)
                                 }}
                                 className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-black disabled:opacity-35 text-white font-black text-sm tracking-wide flex items-center justify-center gap-2.5 transition-colors shadow-lg disabled:shadow-none"
                             >

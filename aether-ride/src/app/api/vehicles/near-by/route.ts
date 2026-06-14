@@ -7,10 +7,10 @@ export async function POST(req: NextRequest) {
         await connectDB()
         const { latitude, longitude, vehicleType } = await req.json()
         if(!latitude || !longitude ) {
-            return NextResponse.json({ error: "Coordinates are required" }, { status: 400 })
+            return NextResponse.json({ message: "Coordinates are required" }, { status: 400 })
         }
         if(!vehicleType){
-            return NextResponse.json({ error: "Vehicle type is required" }, { status: 400 })
+            return NextResponse.json({ message: "Vehicle type is required" }, { status: 400 })
         }
         const partner = await User.find({
             role: "partner",
@@ -42,6 +42,6 @@ export async function POST(req: NextRequest) {
 
 
     }catch(err){
-        return NextResponse.json({ message: `Error occurred while fetching nearby vehicles: ${err}` }, { status: 500 })
+        return NextResponse.json({ message: `message occurred while fetching nearby vehicles: ${err}` }, { status: 500 })
     }
 }
