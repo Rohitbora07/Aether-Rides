@@ -39,7 +39,7 @@ export async function POST( req: NextRequest ) {
             pickUpAddress,
             dropAddress,    
             pickUpLocation: pickUpCoords,
-            dropLocation: dropLCoords,
+            dropLocation: dropCoords,
             fare,
             userMobile: mobileNumber,
             driverMobile: driver.mobileNumber,
