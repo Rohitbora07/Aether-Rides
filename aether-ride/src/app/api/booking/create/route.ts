@@ -25,10 +25,15 @@ export async function POST( req: NextRequest ) {
             user: session.user.id,
             bookingStatus : {
                 $in: ["requested", "awaiting_payment", "confirmed", "started"]
-            }
+            },
+            driver: driverId,
+            vehicle: vehicleId,
+            pickUpAddress: pickUpAddress,
+            dropAddress: dropAddress
         })
 
         if(existingBooking){
+            // console.log("Existing booking found:", existingBooking)
             return NextResponse.json(existingBooking)
         }
 

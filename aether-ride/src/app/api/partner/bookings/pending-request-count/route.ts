@@ -14,6 +14,7 @@ export async function GET(){
         }
         const partner = await User.findOne({ email:session.user.email })
         if( !partner ){
+            console.log("Partner not found for email:", session.user.email)
             return NextResponse.json({message:"User not found"},
                 {status:400}
             )
@@ -22,6 +23,7 @@ export async function GET(){
             driver: partner.id,
             bookingStatus: "requested"
         })
+        console.log(`Pending request count for partner ${partner.email}: ${count}`)
         return NextResponse.json({count}, {status:200})
     }catch(error){
         return NextResponse.json({message:`Pending request count error: ${error}`},

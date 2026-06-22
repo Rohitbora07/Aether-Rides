@@ -24,12 +24,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({orderId: order.id, amount: order.amount}, {status: 200});
 
-    }catch (error: any) {
-    console.error("RAZORPAY ERROR:", error?.error || error);
-
-    return NextResponse.json({
-        message: error?.error?.description || error?.message,
-        fullError: error
-    }, { status: 500 });
-}
+    }catch (error){
+        return NextResponse.json({message: `Payment creation error: ${error}`}, {status: 500});
+    }
 }

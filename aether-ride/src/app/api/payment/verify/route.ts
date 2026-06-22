@@ -19,8 +19,8 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ message: "Booking not found", success: false });
         }
 
-        const adminCommission = booking.fare * 0.10;
-        const partnerAmount = booking.fare - adminCommission;
+        const adminCommission = (booking.fare * 0.10).toFixed(2);
+        const partnerAmount = (booking.fare - parseFloat(adminCommission)).toFixed(2);
         booking.paymentStatus = "paid";
         booking.bookingStatus = "confirmed";
         booking.adminCommission = adminCommission;
