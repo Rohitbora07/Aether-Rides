@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from "motion/react"
 import Image from 'next/image'
 import Link from 'next/link'
@@ -11,6 +11,9 @@ import { Menu, X } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 import { setUserData } from '@/redux/userSlice'
 import ProfileMenu from './ProfileMenu'
+import axios from 'axios'
+import { PARTNER_PENDING_REQUEST_COUNT_ROUTE } from '@/constants/routes'
+import {getSocket} from "@/lib/socket"
 
 const Nav_Items = ["Home", "Bookings", "About Us", "Contact"]
 
@@ -20,13 +23,40 @@ const Nav = () => {
     const [profileOpen, setProfileOpen] = useState(false)
     const { userData } = useSelector((state: RootState) => state.user)
     const [menuOpen, setMenuOpen] = useState(false)
-    console.log(userData)
+    const [pendingRequestCount, setPendingRequestCount] = useState(0)
+    // console.log(userData)
     const dispatch = useDispatch<AppDispatch>()
     const handleLogOut = async () => {
         await signOut({ redirect: true, callbackUrl: "/" })
         dispatch(setUserData(null))
         setProfileOpen(false)
     }
+
+    useEffect(() => {
+        const getPendingRequestCount = async () => {
+            try {
+                const { data } = await axios.get(PARTNER_PENDING_REQUEST_COUNT_ROUTE)
+                console.log("Pending request count:", data)
+                setPendingRequestCount(data.count)
+            } catch (error) {
+                console.log("Error fetching pending request count:", error)
+            }
+        }
+        if (userData?.role === "partner") {
+            getPendingRequestCount()
+        }
+    }, [userData?.role])
+
+    useEffect(() => {
+        const socket = getSocket()
+        socket.on("new-booking", (data) => {
+            console.log("New booking received:", data)
+            setPendingRequestCount(prev => prev + 1)
+        })
+        return () => {
+            socket.off("new-booking")
+        }
+    })
     return (
         <>
             <motion.div
@@ -37,17 +67,32 @@ const Nav = () => {
                 <div className='max-w-7xl mx-auto px-4 md:px-8 flex items-center justify-between'>
                     <Image src={"/logo.png"} alt='logo' width={140} height={140} priority />
                     <div className='hidden md:flex items-center gap-10' >
-                        {Nav_Items.map((item, index) => {
-                            let href;
-                            if (item === "Home") href = "/"
-                            else href = `/${item.toLowerCase()}`
-                            const isActive = href === pathName
-                            return <Link key={index} href={href} className={`text-sm font-medium transition
+                        {
+                            userData?.role === "partner" ? (
+                                <>
+                                    <Link className=" relative text-sm font-medium text-gray-300 hover:text-white transition" href={"/"} >Home</Link>
+                                    <Link className=" relative text-sm font-medium text-gray-300 hover:text-white transition" href={"/partner/pending-request"} >Pending Request
+                                        <span className=' absolute -top-2 -right-3 w-5 h-5 rounded-full bg-white text-black text-xs flex items-center justify-center' >{pendingRequestCount}</span>
+                                    </Link>
+                                    <Link className=" relative text-sm font-medium text-gray-300 hover:text-white transition" href={"/partner/bookings"} >Bookings</Link>
+                                    <Link className=" relative text-sm font-medium text-gray-300 hover:text-white transition" href={"/partner/active-ride"} >Active Ride</Link>
+                                    <Link className=" relative text-sm font-medium text-gray-300 hover:text-white transition" href={"/about-us"} >About Us</Link>
+                                    <Link className=" relative text-sm font-medium text-gray-300 hover:text-white transition" href={"/contact"} >Contact</Link>
+                                </>
+                            ) :
+                                Nav_Items.map((item, index) => {
+                                    let href;
+                                    if (item === "Home") href = "/"
+                                    else href = `/user/${item.toLowerCase()}`
+                                    const isActive = href === pathName
+                                    return <Link key={index} href={href} className={`text-sm font-medium transition
                         ${isActive ?
-                                    "text-white"
-                                    : "text-gray-400 hover:text-white"
-                                }`}>{item}</Link>
-                        })}
+                                            "text-white"
+                                            : "text-gray-400 hover:text-white"
+                                        }`}>{item}</Link>
+                                })
+                        }
+
                     </div>
                     <div className=" flex items-center relative gap-3 ">
                         <div className=' hidden md:block relative ' >

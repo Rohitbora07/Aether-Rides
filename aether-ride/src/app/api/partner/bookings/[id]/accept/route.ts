@@ -1,6 +1,8 @@
 import connectDB from "@/lib/db";
 import { NextResponse, NextRequest } from "next/server";
 import Booking from '@/models/booking.model'
+import axios from "axios";
+
 
 export async function GET(
     req: NextRequest,
@@ -8,7 +10,7 @@ export async function GET(
 ) {
     try {
         const id = (await context.params).id
-        if( !id ){
+        if (!id) {
             return NextResponse.json({ message: "Booking ID is required" },
                 { status: 400 }
             )
@@ -16,7 +18,7 @@ export async function GET(
         console.log("Accepting booking with ID:", id)
         await connectDB()
         const booking = await Booking.findById(id)
-        if (!booking  && booking.bookingStatus !== "requested") {
+        if (!booking && booking.bookingStatus !== "requested") {
             return NextResponse.json({ message: "Booking not found" },
                 { status: 400 }
             )
@@ -24,6 +26,13 @@ export async function GET(
         booking.bookingStatus = "awaiting_payment"
         booking.paymentDeadLine = new Date(Date.now() + 5 * 60 * 1000) // 15 minutes from now
         await booking.save()
+
+        await axios.post(`${process.env.NEXT_PUBLIC_SOCKET_URL}/emit`, {
+            event: "accept-booking",
+            userId: booking.user,
+            data: booking.bookingStatus
+        })
+        
         return NextResponse.json({ success: true }, { status: 200 })
 
     } catch (error) {

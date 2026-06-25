@@ -28,6 +28,24 @@ const io = new Server(server, {
     }
 })
 
+app.post("/emit", async (req, res) => {
+    const { event, userId, data } = req.body
+    try{
+        console.log("EVENT:", event)
+        const user = await User.findById(userId)
+        console.log("FOUND USER:", user?._id)
+    console.log("SOCKET:", user?.socketId)
+        if( user.socketId ){
+            io.to(user.socketId).emit(event, data)
+        }
+        console.log(`Event ${event} emitted to user ${userId}`)
+        res.status(200).json({ message: "Event emitted successfully", success: true })
+    }catch(err){
+        console.error("Error emitting event:", err)
+        res.status(500).json({ message: "Failed to emit event", success: false })
+    }
+})
+
 io.on("connection",(socket) => {
     console.log("New client connected:", socket.id)
     socket.on("identity", async (userId) => {
@@ -48,8 +66,28 @@ io.on("connection",(socket) => {
         })
     })
 
+    socket.on("join-ride", (bookingId) => {
+        console.log(`User ${socket.userId} joining ride room: ${bookingId}`)
+        socket.join(`ride-${bookingId}`)
+    })
+
+    socket.on("driver-location-update", ({bookingId, latitude, longitude, status}) => {
+        console.log(`Driver location update for booking ${bookingId}: (${latitude}, ${longitude}), status: ${status}`)
+        io.to(`ride-${bookingId}`).emit("driver-location",{
+            latitude,
+            longitude
+        })
+
+        console.log(`Emitted driver location to room ride-${bookingId}`)
+    })
+
+    socket.on("chat-message",(data) => {
+        console.log(`Chat message for booking ${data.bookingId}:`, data)
+        io.to(`ride-${data.bookingId}`).emit("chat-message", data)
+    })
+
     socket.on("disconnect", async () => {
-        if( !socket.userId ) return
+        if( !socket.userId ) return;
         await User.findByIdAndUpdate( socket.userId, {
             socketId: null,
             isOnline: false

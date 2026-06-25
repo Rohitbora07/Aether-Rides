@@ -3,6 +3,7 @@ import connectDB from "@/lib/db";
 import { auth } from "@/lib/auth";
 import User from "@/models/user.model";
 import Booking from "@/models/booking.model";
+import axios from "axios";
 
 
 export async function POST( req: NextRequest ) {
@@ -51,9 +52,20 @@ export async function POST( req: NextRequest ) {
             bookingStatus: "requested",
         })
 
+        console.log(process.env.NEXT_PUBLIC_SOCKET_URL)
+        console.log("About to emit new booking")
+        await axios.post(`${process.env.NEXT_PUBLIC_SOCKET_URL}/emit`, {
+            event: "new-booking",
+            userId: driverId,
+            data: newBooking
+        })
+        console.log("New booking emitted to driver:", driverId)
+
+
         return NextResponse.json({newBooking}, { status: 201 })
 
     } catch (err) {
+        console.error("Error creating booking:", err)
         return NextResponse.json({ message: `Failed to create booking: ${err}` }, { status: 500 })
     }
 }

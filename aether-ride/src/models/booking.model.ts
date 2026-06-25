@@ -1,6 +1,6 @@
 import mongoose from "mongoose"
 
-export type BookingStatus = "requested" | "awaiting_payment" | "confirmed" | "completed" | "cancelled" | "started" | "rejected" | "expired"
+export type BookingStatus = "idle" | "requested" | "awaiting_payment" | "confirmed" | "completed" | "cancelled" | "started" | "rejected" | "expired"
 
 export type PaymentStatus = "pending" | "paid" | "failed" | "cash"
 
@@ -20,6 +20,7 @@ export interface IBooking {
         type: string
         coordinates: number[]
     }
+    paymentDeadLine: Date
     fare: number
     userMobile: string
     driverMobile: string
@@ -50,7 +51,7 @@ const bookingSchema = new mongoose.Schema<IBooking>({
     },
     vehicle:{
         type: mongoose.Types.ObjectId,
-        ref: "User",
+        ref: "Vehicle",
         required: true
     },
     pickUpAddress: {
@@ -93,8 +94,8 @@ const bookingSchema = new mongoose.Schema<IBooking>({
     },
     bookingStatus: {
         type: String,
-        enum: ["requested", "awaiting_payment", "confirmed", "completed", "cancelled", "started", "rejected", "expired"],
-        default: "requested"
+        enum: ["idle", "requested", "awaiting_payment", "confirmed", "completed", "cancelled", "started", "rejected", "expired"],
+        default: "idle"
     },
     paymentStatus: {
         type: String,
@@ -121,6 +122,9 @@ const bookingSchema = new mongoose.Schema<IBooking>({
         type: Date,
     },
     dropOtpExpiry: {
+        type: Date,
+    },
+    paymentDeadLine: {
         type: Date,
     }
 },{timestamps: true})
