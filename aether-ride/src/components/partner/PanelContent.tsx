@@ -2,9 +2,6 @@
 import { Clock, IndianRupee, Phone, User, MessageCircle, Truck, Bike, Car } from 'lucide-react'
 import { IBooking } from "../../app/partner/pending-request/page"
 import { motion, AnimatePresence } from "motion/react"
-import { useSelector } from "react-redux"
-import { RootState } from "@/redux/store"
-import { useEffect, useState } from "react"
 import RideChat from "./RideChat"
 
 type PanelConfig = Record<string, unknown>
@@ -46,6 +43,7 @@ const getVehicleIcon = (vehicleType?: string) => {
 
 function PanelContent({ isActive, displayDistance, displayEta, cfg, status, booking, paymentStatus, canChat, onChatToggle, chatOpen, currentRole }: PanelContentProps) {
 
+    console.log("PanelContent Rendered", {  displayDistance, cfg, status });
     return (
         <div className="flex flex-col pt-5 pb-4 gap-3">
 
@@ -180,7 +178,7 @@ function PanelContent({ isActive, displayDistance, displayEta, cfg, status, book
                             <p className="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">Your Vehicle</p>
                             <p className="text-sm font-bold text-zinc-900 truncate">{booking.vehicle.vehicleModel ?? "Vehicle"}</p>
                         </div>
-                        <div className="flex-shrink-0 bg-zinc-900 px-3 py-1.5 rounded-lg">
+                        <div className="shrink-0 bg-zinc-900 px-3 py-1.5 rounded-lg">
                             <p className="text-white text-xs font-black tracking-widest font-mono">
                                 {booking.vehicle.vehicleNumber ?? "Number"}
                             </p>

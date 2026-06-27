@@ -35,10 +35,10 @@ function PricingModal({ open, onClose, data }: PricingModalProps) {
             if (image) {
                 formData.append("vehicleImage", image)
             }
-            const { data } = await axios.post(ONBOARDING_PRICE, formData)
+            await axios.post(ONBOARDING_PRICE, formData)
             onClose()
             setLoading(false)
-            console.log(data)
+            // console.log(data)
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 setErr(error?.response?.data?.message ?? "Something went wrong by axios")

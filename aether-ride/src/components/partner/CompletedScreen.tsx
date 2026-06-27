@@ -77,7 +77,7 @@ function CompletedScreen({ booking, role }: { booking: IBooking; role: string })
 
                     {booking?.user && (
                         <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center gap-3 mb-3">
-                            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center flex-shrink-0">
+                            <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0">
                                 <User size={20} className="text-zinc-400" />
                             </div>
 

@@ -1,9 +1,7 @@
 import {auth} from "@/lib/auth"
 import connectDB from "@/lib/db"
 import {NextResponse, NextRequest} from "next/server"
-import User from "@/models/user.model"
 import Booking from "@/models/booking.model"
-import Vehicle from "@/models/vehicle.model"
 
 export async function POST(req: NextRequest) {
     try{

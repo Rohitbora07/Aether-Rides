@@ -53,7 +53,6 @@ function Page() {
     const [pickUpCountry, setPickUpCountry] = useState("")
     const [pickUpLat, setpickUpLat] = useState<number | undefined>()
     const [pickUpLon, setpickUpLon] = useState<number | undefined>()
-    const [dropCity, setDropCity] = useState("")
     const [dropLat, setdropLat] = useState<number | undefined>()
     const [dropLon, setdropLon] = useState<number | undefined>()
     const [locating, setLocating] = useState(false)
@@ -112,7 +111,7 @@ function Page() {
 
             const url = `https://api.geoapify.com/v1/geocode/autocomplete?${params}`;
             const { data } = await axios.get(url)
-            console.log(data)
+            // console.log(data)
             const results: Place[] = (data.features ?? []).map((f: PhotonFeature) => ({
                 id: f.properties.place_id,
                 name: f.properties.name,
@@ -425,7 +424,6 @@ function Page() {
                                                             transition={{ delay: i * 0.03 }}
                                                             onClick={() => {
                                                                 setDropLocation(suggestion(p))
-                                                                setDropCity(p.city ?? "")
                                                                 setdropLat(p.lat)
                                                                 setdropLon(p.lon)
                                                                 setDropSuggestions([])

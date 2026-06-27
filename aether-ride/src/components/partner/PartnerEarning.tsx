@@ -3,7 +3,7 @@ import axios from "axios"
 import { motion, AnimatePresence } from "motion/react"
 import { BarChart2, Zap, Star, TrendingUp, TrendingDown } from "lucide-react"
 import { useEffect, useState } from "react"
-import { ADMIN_EARNING_ROUTE } from "@/constants/routes"
+import { PARTNER_EARNING_ROUTE } from "@/constants/routes"
 import { ResponsiveContainer, Bar, BarChart,Cell, XAxis, YAxis, CartesianGrid } from "recharts"
 
 type Earning = {
@@ -11,16 +11,17 @@ type Earning = {
     earning: number
 }
 
-function AdminEarning() {
+function PartnerEarning() {
     const [earnings, setEarnings] = useState<Earning[]>([])
     useEffect(() => {
         const fetchEarnings = async () => {
             try {
-                const { data } = await axios.get(ADMIN_EARNING_ROUTE)
+                const { data } = await axios.get(PARTNER_EARNING_ROUTE)
+                // console.log("Partner earnings data:", data)
                 const last7DaysEarnings = data.earnings.slice(-7)
                 setEarnings(last7DaysEarnings)
             } catch (error) {
-                console.error("Error fetching admin earnings:", error)
+                console.error("Error fetching partner earnings:", error)
             }
         }
         fetchEarnings()
@@ -72,7 +73,7 @@ function AdminEarning() {
             <div className="flex items-start justify-between mb-6 flex-wrap gap-4">
                 <div>
                     <span className="inline-block text-[11px] text-blue-600 font-semibold tracking-widest uppercase bg-blue-50 px-3 py-1 rounded-full mb-2">
-                        Admin Dashboard
+                        Partner Dashboard
                     </span>
 
                     <h2 className="text-xl font-bold text-gray-900 tracking-tight">
@@ -158,7 +159,7 @@ function AdminEarning() {
                                 tickFormatter={(v) => `₹${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`}
                             />
 
-                            <Bar dataKey="earnings" radius={[8, 8, 3, 3]}>
+                            <Bar dataKey="earning" radius={[8, 8, 3, 3]}>
                                 {earnings.map((d, i) => {
                                     const isToday = i === earnings.length - 1;
                                     const isBest = d.earning === max && !isToday;
@@ -185,4 +186,4 @@ function AdminEarning() {
     )
 }
 
-export default AdminEarning
+export default PartnerEarning

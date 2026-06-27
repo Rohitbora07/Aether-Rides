@@ -16,12 +16,16 @@ const SignUpForm = ({ setUserEmail, setAuthMode }: { setUserEmail: (email: strin
         setLoading(true);
         e.preventDefault();
         try{
-            const {data} = await axios.post(SIGNUP_ROUTE, {name, email, password})
+            await axios.post(SIGNUP_ROUTE, {name, email, password})
             setAuthMode("otp")
             setUserEmail(email)
-            console.log("Registration successful", data.user);
-        }catch (error:any) {
-            setErr(error.response?.data?.message || "Registration failed");
+            // console.log("Registration successful", data.user);
+        }catch (error: unknown) {
+            if (axios.isAxiosError<{ message?: string }>(error)) {
+                setErr(error.response?.data?.message || "Registration failed");
+            } else {
+                setErr("Registration failed");
+            }
         }finally{
             setLoading(false);
         }

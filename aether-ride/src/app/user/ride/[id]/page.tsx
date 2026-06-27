@@ -4,7 +4,8 @@ import { USER_ACTIVE_BOOKING_ROUTE } from "@/constants/routes"
 import axios from "axios"
 import { motion } from "motion/react"
 import { IBooking } from "../../../partner/pending-request/page"
-import LiveRideMap from '../../../../components/partner/LiveRideMap'
+import dynamic from "next/dynamic";
+const LiveRideMap = dynamic(()=> import("@/components/partner/LiveRideMap"), { ssr: false });
 import { BookingStatus } from '@/models/booking.model'
 import { ChevronUp, Zap } from 'lucide-react'
 import PanelContent from '../../../../components/partner/PanelContent'
@@ -84,7 +85,7 @@ function Page() {
         const socket = getSocket()
         socket.emit("join-ride",id)
         socket.on("driver-location",({latitude,longitude}) => {
-            console.log("Driver location update received:", latitude, longitude)
+            // console.log("Driver location update received:", latitude, longitude)
             setDriverPos([latitude, longitude])
         })
         return () => { 

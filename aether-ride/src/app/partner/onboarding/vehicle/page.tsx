@@ -24,14 +24,14 @@ function Page() {
         setErr("")
         try {
             setLoading(true)
-            const { data } = await axios.post(ONBOARDING_VEHICLE, {
+            await axios.post(ONBOARDING_VEHICLE, {
                 type: vechicleType,
                 vehicleNumber: vehicleNumber,
                 vehicleModel: vehicleModel
             })
             router.push("/")
             setLoading(false)
-            console.log(data)
+            // // console.log(data)
         } catch (error: unknown) {
             if (axios.isAxiosError(error)) {
                 setErr(error?.response?.data?.message ?? "Something went wrong by axios")
@@ -45,7 +45,7 @@ function Page() {
         const getVehicle = async () => {
             try {
                 const { data } = await axios.get(ONBOARDING_VEHICLE)
-                console.log(data)
+                // console.log(data)
                 if(!data.vehicle) return
                 setVehicleType(data.vehicle.type)
                 setVehicleModel(data.vehicle.vehicleModel)

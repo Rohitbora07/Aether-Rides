@@ -42,8 +42,8 @@ function Page() {
             formData.append("aadharCard", docs.aadhaar)
             formData.append("license", docs.license)
             formData.append("rc", docs.rc)
-            const { data } = await axios.post(ONBOARDING_DOCUMENTS, formData)
-            console.log(data)
+            await axios.post(ONBOARDING_DOCUMENTS, formData)
+            // // console.log(data)
             router.push("/partner/onboarding/bank")
             setLoading(false)
 

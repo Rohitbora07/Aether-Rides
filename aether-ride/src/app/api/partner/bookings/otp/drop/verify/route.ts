@@ -3,7 +3,7 @@ import connectDB from "@/lib/db";
 import Booking from "@/models/booking.model";
 
 export async function POST(req: NextRequest) {
-    try{
+    try {
         await connectDB()
         const { bookingId, otp } = await req.json()
         if (!bookingId || !otp) {
@@ -12,16 +12,23 @@ export async function POST(req: NextRequest) {
         const booking = await Booking.findById(bookingId)
         if (!booking) {
             return NextResponse.json({ error: "Booking not found" }, { status: 404 })
-        }   
-        
-        if(!booking.dropOtp || booking.dropOtp !== otp){
+        }
+
+        if (!booking.dropOtp || booking.dropOtp !== otp) {
             return NextResponse.json({ error: "Invalid OTP" }, { status: 400 })
         }
 
-        if(booking.dropOtpExpiry < new Date()){
+        if (booking.dropOtpExpiry < new Date()) {
             return NextResponse.json({ error: "OTP has expired" }, { status: 400 })
         }
 
+        if (booking.paymentStatus === "cash") {
+            const adminCommission = (booking.fare * 0.10).toFixed(2);
+            const partnerAmount = (booking.fare - parseFloat(adminCommission)).toFixed(2);
+            booking.adminCommission = adminCommission;
+            booking.partnerAmount = partnerAmount;
+        }
+        booking.paymentStatus = "paid";
         booking.bookingStatus = "completed"
         booking.dropOtp = ""
         booking.dropOtpExpiry = null

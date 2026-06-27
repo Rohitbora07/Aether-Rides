@@ -10,7 +10,8 @@ import {
 import axios from "axios";
 import { motion, AnimatePresence } from "motion/react";
 import { IBooking } from "../pending-request/page";
-import LiveRideMap from "../../../components/partner/LiveRideMap";
+import dynamic from "next/dynamic";
+const LiveRideMap = dynamic(()=> import("@/components/partner/LiveRideMap"), { ssr: false });
 import { BookingStatus } from "@/models/booking.model";
 import { ChevronUp, Zap, MapPin, ArrowRight, KeyRound } from "lucide-react";
 import PanelContent from "../../../components/partner/PanelContent";
@@ -46,11 +47,11 @@ function Page() {
 
   const handlePickOtpSend = async () => {
     try {
-      const { data } = await axios.post(PICKUP_OTP_SEND_ROUTE, {
+      await axios.post(PICKUP_OTP_SEND_ROUTE, {
         bookingId: booking?._id,
       });
       setPickOtpMode(true);
-      console.log("Pickup OTP sent:", data);
+      // console.log("Pickup OTP sent:", data);
     } catch (err) {
       console.log(err);
     }
@@ -59,11 +60,11 @@ function Page() {
   const handlePickOtpVerify = async () => {
     setPickOtpLoading(true);
     try {
-      const { data } = await axios.post(PICKUP_OTP_VERIFY_ROUTE, {
+      await axios.post(PICKUP_OTP_VERIFY_ROUTE, {
         bookingId: booking?._id,
         otp: pickOtp,
       });
-      console.log("Pickup OTP verified:", data);
+      // console.log("Pickup OTP verified:", data);
       setPickOtpVerified(true);
       setPickOtpMode(false);
       setBooking(prev => prev ? { ...prev, bookingStatus: "started" } : prev);
@@ -82,11 +83,11 @@ function Page() {
   const handleDropOtpVerify = async () => {
     setDropOtpLoading(true);
     try {
-      const { data } = await axios.post(DROP_OTP_VERIFY_ROUTE, {
+      await axios.post(DROP_OTP_VERIFY_ROUTE, {
         bookingId: booking?._id,
         otp: dropOtp,
       });
-      console.log("Drop OTP verified:", data);
+      // console.log("Drop OTP verified:", data);
       setDropOtpVerified(true);
       setDropOtpMode(false);
       setBooking(prev => prev ? { ...prev, bookingStatus: "completed" } : prev);
@@ -104,11 +105,11 @@ function Page() {
 
   const handleDropOtpSend = async () => {
     try {
-      const { data } = await axios.post(DROP_OTP_SEND_ROUTE, {
+      await axios.post(DROP_OTP_SEND_ROUTE, {
         bookingId: booking?._id,
       });
       setDropOtpMode(true);
-      console.log("Drop OTP sent:", data);
+      // console.log("Drop OTP sent:", data);
     } catch (err) {
       console.log(err);
     } 
@@ -227,7 +228,7 @@ function Page() {
           longitude: lon,
           status: status,
         });
-        console.log("Driver location update sent:", lat, lon, status);
+        // console.log("Driver location update sent:", lat, lon, status);
       },
       (err) => {
         console.log("gps error ", err);
@@ -248,7 +249,7 @@ function Page() {
     const socket = getSocket();
     socket.emit("join-ride", booking?._id);
     socket.on("driver-location", ({ latitude, longitude }) => {
-      console.log("Driver location update received:", latitude, longitude);
+      // console.log("Driver location update received:", latitude, longitude);
       setDriverPos([latitude, longitude]);
     });
     return () => {

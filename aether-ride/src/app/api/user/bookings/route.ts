@@ -1,12 +1,11 @@
 import connectDB from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { NextResponse, NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import User from '@/models/user.model'
 import Booking from '@/models/booking.model'
 import mongoose from "mongoose";  
-import Vehicle from "@/models/vehicle.model";
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
         await connectDB()
         const session = await auth()

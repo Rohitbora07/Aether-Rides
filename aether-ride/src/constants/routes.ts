@@ -28,6 +28,7 @@ export const PARTNER_ACTIVE_BOOKING_ROUTE = "/api/partner/my-active"
 export const ADMIN_DASHBOARD_ROUTE = "/api/admin/dashboard";
 export const ADMIN_PARTNER_REVIEWS_ROUTE = "/api/admin/reviews/partner";
 export const ADMIN_VEHICLE_REVIEWS_ROUTE = "/api/admin/reviews/vehicle";
+export const ADMIN_EARNING_ROUTE = "/api/admin/earning";
 
 // VEHICLE SEARCH ROUTE
 export const NEARBY_VEHICLES_ROUTE = "/api/vehicles/near-by";
@@ -59,3 +60,5 @@ export const PICKUP_OTP_SEND_ROUTE = `${OTP_BASE_ROUTE}pickup/send`;
 export const PICKUP_OTP_VERIFY_ROUTE = `${OTP_BASE_ROUTE}pickup/verify`;
 export const DROP_OTP_SEND_ROUTE = `${OTP_BASE_ROUTE}drop/send`;
 export const DROP_OTP_VERIFY_ROUTE = `${OTP_BASE_ROUTE}drop/verify`;
+
+export const PARTNER_EARNING_ROUTE = "/api/partner/earning";

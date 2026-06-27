@@ -2,27 +2,24 @@ import {useState} from 'react'
 import { CircleDashed, Lock, Mail } from 'lucide-react';
 import { motion } from 'motion/react';
 import { AuthMode } from '../types';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 
 const LoginForm = ({ setAuthMode }: { setAuthMode: (mode: AuthMode) => void }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    const [err, setErr] = useState("");
-
     const handleLogin = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        const res = await signIn("credentials",{
+        await signIn("credentials",{
             email,
             password,
             redirect: false,
         })
         setLoading(false);
-        console.log(res)
+        // console.log(res)
     }
-    const {data} = useSession()
-    console.log(data)
+
 
     return (
         <motion.div

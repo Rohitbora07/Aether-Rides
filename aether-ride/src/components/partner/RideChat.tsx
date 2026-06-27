@@ -22,8 +22,8 @@ type message = {
 }
 
 function RideChat({ currentRole, bookingId, userName, driverName }: RideChatProps) {
-    console.log("RideChat Props:", { currentRole, bookingId, userName, driverName })
-    const myName = currentRole === "user" ? userName : driverName
+    // console.log("RideChat Props:", { currentRole, bookingId, userName, driverName })
+    // const myName = currentRole === "user" ? userName : driverName
     const otherName = currentRole === "user" ? driverName : userName
 
     const [messages, setMessages] = useState<message[]>([])
@@ -47,7 +47,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: RideChatProp
                 sender: currentRole,
                 message: text
             })
-            console.log("Message sent:", data.msg)
+            // console.log("Message sent:", data.msg)
             socket.emit("chat-message", data.msg)
             setText("")
             // setMessages([...messages, data.msg])
@@ -62,7 +62,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: RideChatProp
                 const { data } = await axios.post(GET_ALL_MESSAGES_ROUTE, {
                     bookingId
                 })
-                console.log("Fetched messages:", data.messages[data.messages.length - 1]?.message)
+                // console.log("Fetched messages:", data.messages[data.messages.length - 1]?.message)
                 setMessages(data.messages)
                 setLastMessage(data.messages[data.messages.length - 1]?.message || "")
             } catch (error) {
@@ -72,13 +72,13 @@ function RideChat({ currentRole, bookingId, userName, driverName }: RideChatProp
         fetchMessages()
     }, [bookingId])
 
-    console.log("Current Role:", currentRole)
+    // console.log("Current Role:", currentRole)
     useEffect(() => {
         const socket = getSocket()
         socket.on("chat-message", (data: message) => {
 
-            console.log("Received chat message:", data)
-            console.log("driver: ", data.sender)
+            // console.log("Received chat message:", data)
+            // console.log("driver: ", data.sender)
             setMessages((prevMessages) => [...prevMessages, data])
         })
         return () => {
@@ -94,7 +94,7 @@ function RideChat({ currentRole, bookingId, userName, driverName }: RideChatProp
                 lastMessage,
                 role: currentRole
             })
-            console.log("AI Suggestions:", data)
+            // console.log("AI Suggestions:", data)
             setSuggestions(data.suggestions)
         } catch (error) {
             console.error("Error fetching AI suggestions:", error)

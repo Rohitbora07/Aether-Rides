@@ -29,14 +29,14 @@ function Page() {
         setErr("")
         try {
             setLoading(true)
-            const { data } = await axios.post(ONBOARDING_BANK, {
+            await axios.post(ONBOARDING_BANK, {
                 accountHolderName,
                 accountNumber,
                 ifscCode: sanitizeIFSC,
                 mobileNumber: mobile,
                 upiId: upi
             })
-            console.log(data)
+            // console.log(data)
             router.push("/")
             setLoading(false)
         } catch (error: unknown) {

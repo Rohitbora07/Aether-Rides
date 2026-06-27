@@ -1,10 +1,8 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import L from 'leaflet'
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet'
 import axios from 'axios'
-import { motion, AnimatePresence } from 'motion/react'
-import { MapPin, Navigation2 } from 'lucide-react'
 
 type Props = {
     driverLocation: [number, number] | null,

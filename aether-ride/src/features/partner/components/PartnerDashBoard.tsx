@@ -7,6 +7,7 @@ import { Check, Clock, Lock } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import RejectionCard from '@/components/partner/RejectionCard';
 import StatusCard from '@/components/partner/StatusCard';
+import PartnerEarning from '@/components/partner/PartnerEarning';
 import PricingModal from '@/components/partner/PricingModal';
 import { IVehicle } from '@/models/vehicle.model';
 import { ONBOARDING_PRICE } from '@/constants/routes';
@@ -156,6 +157,7 @@ function PartnerDashBoard() {
                         actionLabel="Edit Pricing"
                     />
                 )}
+                <PartnerEarning />
             </div>
 
             <PricingModal

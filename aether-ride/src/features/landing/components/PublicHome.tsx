@@ -14,7 +14,7 @@ const PublicHome = () => {
 
     const [ authModalOpen, setAuthModalOpen ] = useState(false)
     const { userData } = useSelector((state: RootState) => state.user)
-    console.log(userData)
+    // console.log(userData)
     const router = useRouter()
 
     return (

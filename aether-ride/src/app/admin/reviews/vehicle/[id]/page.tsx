@@ -43,7 +43,7 @@ function Page() {
             try {
                 setLoading(true)
                 const { data } = await axios.get(ADMIN_VEHICLE_REVIEWS_ROUTE + `/${id}`)
-                console.log("Vehicle Review Data:", data)
+                // console.log("Vehicle Review Data:", data)
                 setPartnerData(data.vehicle)
             } catch (error) {
                 console.error("Error fetching vehicle review data:", error)
@@ -57,8 +57,8 @@ function Page() {
     const handleApprove = async () => {
             setApproveLoading(true)
             try{
-                const {data} = await axios.get(ADMIN_VEHICLE_REVIEWS_ROUTE + `/${id}/approve`)
-                console.log("Approve Response:", data)
+                await axios.get(ADMIN_VEHICLE_REVIEWS_ROUTE + `/${id}/approve`)
+                // console.log("Approve Response:", data)
                 setApproveLoading(false)
                 router.push("/")
             }catch(error){
@@ -71,8 +71,8 @@ function Page() {
         const handleReject = async () => {
             setRejectLoading(true)
             try{
-                const {data} = await axios.post(ADMIN_VEHICLE_REVIEWS_ROUTE + `/${id}/reject`, { rejectionReason: rejectionReason })
-                console.log("Reject Response:", data)
+                await axios.post(ADMIN_VEHICLE_REVIEWS_ROUTE + `/${id}/reject`, { rejectionReason: rejectionReason })
+                // console.log("Reject Response:", data)
                 setRejectLoading(false)
                 router.push("/")
             }catch(error: unknown){

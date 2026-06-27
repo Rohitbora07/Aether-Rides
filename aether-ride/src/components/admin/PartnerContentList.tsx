@@ -20,7 +20,6 @@ type PartnerContentListProps = {
 
 function PartnerContentList({ data, type }: PartnerContentListProps) {
     const router = useRouter()
-    console.log(data)
 
     if (data.length === 0) {
         return (

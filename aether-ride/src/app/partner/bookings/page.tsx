@@ -19,7 +19,7 @@ function Page() {
             try {
                 setLoading(true)
                 const { data } = await axios.get(PARTNER_BOOKINGS_ROUTE)
-                console.log("Bookings: ", data)
+                // console.log("Bookings: ", data)
                 setBookings(data.bookings)
             } catch (error) {
                 console.error("Error fetching bookings: ", error)

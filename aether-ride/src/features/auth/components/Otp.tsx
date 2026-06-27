@@ -32,14 +32,18 @@ const Otp = ({ email, setAuthMode }: OtpProps) => {
         setLoading(true);
         e.preventDefault();
         try{
-            const {data} = await axios.post(VERIFY_EMAIL_ROUTE, {email,otp: otp.join("")})
+            await axios.post(VERIFY_EMAIL_ROUTE, {email,otp: otp.join("")})
             signOut({redirect: false})
             setAuthMode("login")
-            console.log("Registration successful", data);
+            // console.log("Registration successful", data);
             setErr("");
             setOtp(["", "", "", "", "", ""])
-        }catch (error:any) {
-            setErr(error.response?.data?.message || "Registration failed");
+        }catch (error: unknown) {
+            if (axios.isAxiosError<{ message?: string }>(error)) {
+                setErr(error.response?.data?.message || "Registration failed");
+            } else {
+                setErr("Registration failed");
+            }
         }finally{
             setLoading(false);
         }
@@ -69,6 +73,7 @@ const Otp = ({ email, setAuthMode }: OtpProps) => {
             <button type="submit" className="mt-6 w-full h-11 rounded-xl bg-black text-white font-semibold transition hover:bg-gray-900">
                 {!loading ? "Verify Email" : <CircleDashed size={18} className="animate-spin text-white" />}
             </button>
+            {err && <p className="mt-4 text-sm text-red-500">{err}</p>}
         </motion.div>
         </form>
     )

@@ -77,10 +77,10 @@ function Page() {
 
     const handleAccept = async (id: string) => {
         try {
-            console.log("Accepting booking with ID:", id)
-            const { data } = await axios.get(PARTNER_ACCEPT_BOOKING_ROUTE(id))
+            // console.log("Accepting booking with ID:", id)
+            await axios.get(PARTNER_ACCEPT_BOOKING_ROUTE(id))
             router.push("/partner/bookings")
-            console.log("Booking accepted:", data)
+            // console.log("Booking accepted:", data)
         } catch (err) {
             console.error("Error accepting booking:", err)
         }
@@ -88,8 +88,8 @@ function Page() {
 
     const handleReject = async (id: string) => {
         try {
-            const { data } = await axios.get(PARTNER_REJECT_BOOKING_ROUTE(id))
-            console.log("Booking rejected:", data)
+            await axios.get(PARTNER_REJECT_BOOKING_ROUTE(id))
+            // // console.log("Booking rejected:", data)
             window.location.reload()
         } catch (err) {
             console.error("Error rejecting booking:", err)
@@ -99,7 +99,7 @@ function Page() {
     useEffect(() => {
         const socket = getSocket()
         const handleNewBooking = (data: IBooking) => {
-            console.log("New booking received:", data)
+            // console.log("New booking received:", data)
             setBookings((prev) => [...prev, data])
         }
         socket.on("new-booking",(data: IBooking) => {

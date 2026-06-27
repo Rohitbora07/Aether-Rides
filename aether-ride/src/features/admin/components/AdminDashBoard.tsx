@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from "motion/react"
 import PartnerContentList from '@/components/admin/PartnerContentList'
 import { signOut } from 'next-auth/react'
+import AdminEarning from '@/components/admin/AdminEarning'
 
 type Stats = {
     totalPartners: number,
@@ -35,7 +36,7 @@ function AdminDashBoard() {
     const handlePartnerGet = async () => {
         try {
             const { data } = await axios.get(ADMIN_DASHBOARD_ROUTE)
-            console.log(data)
+            // console.log(data)
             setStats(data.stats)
             setPartnerReviews(data.pendingPartnersReviews)
             setVehicleReviews(data.pendingVehicles)
@@ -130,6 +131,7 @@ function AdminDashBoard() {
                         {activeTab === "vehicle" && <PartnerContentList data={vehicleReviews} type="vehicle" />}
                     </motion.div>
                 </AnimatePresence>
+                <AdminEarning />
             </main>
         </div>
     )

@@ -3,7 +3,6 @@ import connectDB from "@/lib/db"
 import {NextResponse} from "next/server"
 import User from "@/models/user.model"
 import Booking from "@/models/booking.model"
-import Vehicle from "@/models/vehicle.model"
 
 export async function GET() {
     try{

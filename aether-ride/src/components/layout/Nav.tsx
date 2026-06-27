@@ -13,7 +13,7 @@ import { setUserData } from '@/redux/userSlice'
 import ProfileMenu from './ProfileMenu'
 import axios from 'axios'
 import { PARTNER_PENDING_REQUEST_COUNT_ROUTE } from '@/constants/routes'
-import {getSocket} from "@/lib/socket"
+import { getSocket } from "@/lib/socket"
 
 const Nav_Items = ["Home", "Bookings", "About Us", "Contact"]
 
@@ -36,7 +36,6 @@ const Nav = () => {
         const getPendingRequestCount = async () => {
             try {
                 const { data } = await axios.get(PARTNER_PENDING_REQUEST_COUNT_ROUTE)
-                console.log("Pending request count:", data)
                 setPendingRequestCount(data.count)
             } catch (error) {
                 console.log("Error fetching pending request count:", error)
@@ -140,29 +139,65 @@ const Nav = () => {
             </motion.div>
             <AnimatePresence>
                 {menuOpen && (
-                    <><motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 0.4 }}
-                        exit={{ opacity: 0 }}
-                        onClick={() => setMenuOpen(false)}
-                        className="fixed inset-0 bg-black z-30 md:hidden"
-                    />
+                    <>
+                        {/* Backdrop Overlay */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 0.4 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setMenuOpen(false)}
+                            className="fixed inset-0 bg-black z-30 md:hidden backdrop-blur-sm"
+                        />
+
+                        {/* Mobile Menu Container */}
                         <motion.div
                             initial={{ opacity: 0, y: -20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            transition={{ duration: 0.2 }}
-                            className="fixed top-21.25 left-1/2 mt-4 -translate-x-1/2 w-[92%] bg-[#0B0B0B] rounded-2xl shadow-2xl z-40 md:hidden overflow-hidden"
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            className="fixed top-24 left-1/2 -translate-x-1/2 w-[92%] bg-[#0B0B0B]/95 border border-white/10 backdrop-blur-md rounded-2xl shadow-2xl z-40 md:hidden overflow-hidden"
                         >
-                            <div className="flex flex-col divide-y divide-white/10">
-                                {Nav_Items.map((i, index) => {
-                                    const href = i === "Home" ? "/" : `/${i.toLowerCase()}`
-                                    return (
-                                        <Link key={index} href={href} className="px-6 py-4 text-gray-300 hover:bg-white/5">
-                                            {i}
+                            <div className="flex flex-col divide-y divide-white/5 p-2">
+                                {userData?.role === "partner" ? (
+                                    <>
+                                        <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center justify-between" href="/">
+                                            Home
                                         </Link>
-                                    )
-                                })}
+                                        <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center justify-between" href="/partner/pending-request">
+                                            <span>Pending Request</span>
+                                            {pendingRequestCount >= 0 && (
+                                                <span className="w-5 h-5 rounded-full bg-white text-black text-[10px] font-bold flex items-center justify-center shadow-sm">
+                                                    {pendingRequestCount}
+                                                </span>
+                                            )}
+                                        </Link>
+                                        <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/partner/bookings">
+                                            Bookings
+                                        </Link>
+                                        <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/partner/active-ride">
+                                            Active Ride
+                                        </Link>
+                                        <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/about-us">
+                                            About Us
+                                        </Link>
+                                        <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/contact">
+                                            Contact
+                                        </Link>
+                                    </>
+                                ) : <>
+                                <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/">
+                                    Home
+                                </Link>
+                                <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/user/bookings">
+                                    Bookings
+                                </Link>
+                                <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/user/about-us">
+                                    About Us
+                                </Link>
+                                <Link className="px-5 py-3.5 text-sm font-medium text-gray-300 hover:text-white rounded-xl hover:bg-white/5 transition flex items-center" href="/user/contact">
+                                    Contact
+                                </Link>
+                                </>}
                             </div>
                         </motion.div>
                     </>

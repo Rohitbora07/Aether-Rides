@@ -20,8 +20,8 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: searchProps) {
     const [route, setRoute] = useState<[number, number][]>([])
     const [km, setKm] = useState<number | null>(0)
     const [ready, setReady] = useState(false)
-    console.log("pickup:", pickUp)
-    console.log("drop:", drop)
+    // console.log("pickup:", pickUp)
+    // console.log("drop:", drop)
 
     const geoCoding = async (d: string): Promise<[number, number] | null> => {
         try {
@@ -36,7 +36,7 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: searchProps) {
             })
             const url = `https://api.geoapify.com/v1/geocode/search?${params.toString()}`
             const { data } = await axios.get(url)
-            console.log(data)
+            // console.log(data)
             if (!data.features || data.features.length === 0) return null
             const [lon, lat] = data.features[0].geometry.coordinates
             return [lat, lon]

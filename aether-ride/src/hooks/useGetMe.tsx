@@ -12,7 +12,7 @@ function useGetMe(enabled: boolean) {
         if(!enabled) return;
         const getData = async () => {
             const { data } = await axios.get(USER_ROUTE)
-            console.log(data)
+            // console.log(data)
             dispatch(setUserData(data.user))
         }
         getData()

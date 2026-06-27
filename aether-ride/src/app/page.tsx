@@ -8,7 +8,7 @@ import GeoUpdater from "@/utils/GeoUpdater";
 
 export default async function Home() {
   const session = await auth()
-  console.log(session?.user.role)
+  // console.log(session?.user.role)
   return (
     <div className=" w-full min-h-screen bg-white ">
       <GeoUpdater userId = {session?.user?.id as string}  />

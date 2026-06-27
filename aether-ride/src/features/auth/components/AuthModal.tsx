@@ -5,7 +5,7 @@ import { AuthMode } from '../types';
 import LoginForm from './LoginForm';
 import SignUpForm from './SignUpForm';
 import Modal from '@/components/ui/Modal';
-import { signIn, useSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import Otp from './Otp';
 
 type AuthModalPropsType = {
