@@ -7,16 +7,23 @@ import { useDispatch } from 'react-redux'
 
 function useGetMe(enabled: boolean) {
     const dispatch = useDispatch()
-    
+
     useEffect(() => {
-        if(!enabled) return;
+        if (!enabled) return;
+        let isMounted = true;
         const getData = async () => {
-            const { data } = await axios.get(USER_ROUTE)
-            // console.log(data)
-            dispatch(setUserData(data.user))
+            try {
+                const { data } = await axios.get(USER_ROUTE)
+                if (isMounted && data?.user) {
+                    dispatch(setUserData(data.user))
+                }
+            } catch (err) {
+                console.error("Failed to fetch user session data:", err)
+            }
         }
         getData()
+        return () => { isMounted = false; }
     }, [enabled, dispatch])
 }
 
-export default useGetMe
+export default useGetMe;

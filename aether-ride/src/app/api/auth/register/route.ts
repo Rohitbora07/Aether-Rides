@@ -5,19 +5,17 @@ import User from "@/models/user.model";
 import bcrypt from "bcryptjs";
 import { NextRequest, NextResponse } from "next/server";
 
-
 export async function POST(req: NextRequest) {
-
-
-
     try {
-        const { email, name, password } = await req.json();
-        if (!email || !name || !password) {
+        const { email: rawEmail, name, password } = await req.json();
+        if (!rawEmail || !name || !password) {
             return NextResponse.json(
                 { message: "All fields are required" },
                 { status: 400 },
             );
         }
+
+        const email = rawEmail.trim().toLowerCase();
 
         if (password.length < 8) {
             return NextResponse.json(
@@ -31,21 +29,27 @@ export async function POST(req: NextRequest) {
         const existingUser = await User.findOne({ email });
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // OTP valid for 10 minutes
-        const html = verifyEmailTemplate(otp)
+        const html = verifyEmailTemplate(otp);
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
         if (existingUser && existingUser.isEmailVerified === false) {
             existingUser.name = name;
             existingUser.password = hashedPassword;
-            existingUser.email = email;
             existingUser.otp = otp;
             existingUser.otpExpiresAt = otpExpiresAt;
             await existingUser.save();
+
+            try {
+                await sendMail(email, "Verify your email for AETHER RIDES", html);
+            } catch (mailErr) {
+                console.error("Error sending verification mail:", mailErr);
+            }
+
             return NextResponse.json(
                 {
                     user: existingUser,
-                    message: "OTP resent. Please verify your email.",
+                    message: "OTP sent to your email. Please verify.",
                 },
                 { status: 200 },
             );
@@ -53,7 +57,7 @@ export async function POST(req: NextRequest) {
 
         if (existingUser) {
             return NextResponse.json(
-                { message: "User with the same email already exists" },
+                { message: "An account with this email already exists" },
                 { status: 400 },
             );
         }
@@ -64,20 +68,23 @@ export async function POST(req: NextRequest) {
             password: hashedPassword,
             otp,
             otpExpiresAt,
+            isEmailVerified: false,
         });
-        await sendMail(
-            email,
-            "Verify your email for AETHER RIDES",
-            html
-        )
+
+        try {
+            await sendMail(email, "Verify your email for AETHER RIDES", html);
+        } catch (mailErr) {
+            console.error("Error sending verification mail:", mailErr);
+        }
+
         return NextResponse.json(
-            { user, message: "User registered successfully" },
+            { user, message: "User registered successfully. Please verify your email with the OTP sent." },
             { status: 201 },
         );
     } catch (error) {
-        console.log(error);
+        console.error("Registration route error:", error);
         return NextResponse.json(
-            { message: "Something went wrong" },
+            { message: "Failed to register user. Please try again." },
             { status: 500 },
         );
     }

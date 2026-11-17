@@ -1,9 +1,8 @@
-
 'use client'
 import React, { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { VehicleType } from '@/models/vehicle.model'
-import { ArrowLeft, Bike, Car, Package, Truck, CheckCircle, Phone, LocateFixed, ChevronRight, MapPin } from 'lucide-react'
+import { ArrowLeft, Bike, Car, Package, Truck, CheckCircle, Phone, LocateFixed, ChevronRight, MapPin, CircleDashed } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
 
@@ -30,6 +29,7 @@ type Place = {
     lat: number,
     lon: number,
 }
+
 type PhotonFeature = {
     properties: {
         place_id: string
@@ -56,38 +56,58 @@ function Page() {
     const [dropLat, setdropLat] = useState<number | undefined>()
     const [dropLon, setdropLon] = useState<number | undefined>()
     const [locating, setLocating] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
     const [pickUpSuggestions, setPickUpSuggestions] = useState<Place[] | undefined>([])
     const [dropSuggestions, setDropSuggestions] = useState<Place[] | undefined>([])
+
     const progress = [!!pickUpLocation, !!dropLocation, !!(mobileNumber.length === 10), !!vehicle].filter(Boolean).length
 
     const currentLocation = () => {
         if (!navigator.geolocation) return
         setLocating(true)
-        navigator.geolocation.getCurrentPosition(async ({ coords }) => {
-            try {
-                const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
-                if (!apiKey) {
+        navigator.geolocation.getCurrentPosition(
+            async ({ coords }) => {
+                try {
+                    const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
+                    if (!apiKey) {
+                        setLocating(false)
+                        return
+                    }
+                    const params = new URLSearchParams({
+                        lat: coords.latitude.toString(),
+                        lon: coords.longitude.toString(),
+                        apiKey,
+                    })
+                    const url = `https://api.geoapify.com/v1/geocode/reverse?${params.toString()}`
+                    const { data } = await axios.get(url, { timeout: 8000 })
+                    if (data.features && data.features.length > 0) {
+                        const p = data.features[0].properties
+                        setpickUpLocation(p.formatted || `${coords.latitude}, ${coords.longitude}`)
+                        setPickUpCountry(p.country || "")
+                    } else {
+                        setpickUpLocation(`${coords.latitude}, ${coords.longitude}`)
+                    }
+                    setpickUpLat(coords.latitude)
+                    setpickUpLon(coords.longitude)
+                } catch (err) {
+                    console.error("Reverse geocoding error:", err)
+                    setpickUpLocation(`${coords.latitude}, ${coords.longitude}`)
+                    setpickUpLat(coords.latitude)
+                    setpickUpLon(coords.longitude)
+                } finally {
                     setLocating(false)
-                    return
                 }
-                const params = new URLSearchParams({
-                    lat: coords.latitude.toString(),
-                    lon: coords.longitude.toString(),
-                    apiKey,
-                })
-                const url = `https://api.geoapify.com/v1/geocode/reverse?${params}`
-                const { data } = await axios.get(url)
-                const p = data.features[0].properties
-                setpickUpLocation(p.formatted)
-                setPickUpCountry(p.country)
-                setpickUpLat(coords.latitude)
-                setpickUpLon(coords.longitude)
+            },
+            (err) => {
+                console.error("Geolocation error:", err)
                 setLocating(false)
-            } catch (err) {
-                console.error(err)
-                setLocating(false)
+            },
+            {
+                enableHighAccuracy: true,
+                timeout: 10000,
+                maximumAge: 60000
             }
-        })
+        )
     }
 
     const searchAddress = async (query: string, setResults: (r: Place[]) => void) => {
@@ -104,33 +124,88 @@ function Page() {
 
             const params = new URLSearchParams({
                 text: query.trim(),
-                limit: "10",
-                filter: "countrycode:in",
+                limit: "8",
                 apiKey,
             });
 
-            const url = `https://api.geoapify.com/v1/geocode/autocomplete?${params}`;
-            const { data } = await axios.get(url)
-            // console.log(data)
+            const url = `https://api.geoapify.com/v1/geocode/autocomplete?${params.toString()}`;
+            const { data } = await axios.get(url, { timeout: 8000 })
             const results: Place[] = (data.features ?? []).map((f: PhotonFeature) => ({
                 id: f.properties.place_id,
-                name: f.properties.name,
+                name: f.properties.name || "",
                 city: f.properties.city,
                 state: f.properties.state,
                 country: f.properties.country,
                 lat: f.geometry.coordinates[1],
                 lon: f.geometry.coordinates[0],
                 country_code: f.properties.countrycode,
-            }))         
+            }))
             setResults(results)
         } catch (err) {
-            console.error(err)
+            console.error("Address search error:", err)
             setResults([])
         }
     }
 
+    const geocodeAddress = async (text: string): Promise<[number, number] | null> => {
+        try {
+            const apiKey = process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY;
+            if (!apiKey || !text.trim()) return null;
+            const params = new URLSearchParams({ text: text.trim(), apiKey });
+            const res = await axios.get(`https://api.geoapify.com/v1/geocode/search?${params.toString()}`, { timeout: 8000 });
+            if (!res.data.features || res.data.features.length === 0) return null;
+            const [lon, lat] = res.data.features[0].geometry.coordinates;
+            return [lat, lon];
+        } catch {
+            return null;
+        }
+    }
+
     const suggestion = (p: Place) => [p.name, p.city, p.state, p.country].filter(Boolean).join(", ")
-    const canContinue = !!(vehicle && pickUpLocation && dropLocation && mobileNumber.length === 10 && pickUpLat && pickUpLon && dropLat && dropLon)
+    const canContinue = !!(vehicle && pickUpLocation.trim() && dropLocation.trim() && mobileNumber.length === 10)
+
+    const handleContinue = async () => {
+        if (!canContinue || submitting) return;
+        setSubmitting(true);
+        try {
+            let pLat = pickUpLat;
+            let pLon = pickUpLon;
+            let dLat = dropLat;
+            let dLon = dropLon;
+
+            if (!pLat || !pLon) {
+                const pCoords = await geocodeAddress(pickUpLocation);
+                if (pCoords) {
+                    pLat = pCoords[0];
+                    pLon = pCoords[1];
+                }
+            }
+            if (!dLat || !dLon) {
+                const dCoords = await geocodeAddress(dropLocation);
+                if (dCoords) {
+                    dLat = dCoords[0];
+                    dLon = dCoords[1];
+                }
+            }
+
+            const url = new URLSearchParams({
+                pickUp: pickUpLocation,
+                drop: dropLocation,
+                vehicle: vehicle || '',
+                mobile: mobileNumber,
+                pickUpLat: pLat ? String(pLat) : '',
+                pickUpLon: pLon ? String(pLon) : '',
+                dropLat: dLat ? String(dLat) : '',
+                dropLon: dLon ? String(dLon) : ''
+            });
+
+            router.push(`/user/search?${url.toString()}`);
+        } catch (err) {
+            console.error("Error proceeding to search:", err);
+        } finally {
+            setSubmitting(false);
+        }
+    };
 
     return (
         <div className="min-h-screen bg-zinc-100 flex items-center justify-center px-4 py-10">
@@ -144,7 +219,7 @@ function Page() {
                     <motion.button
                         whileTap={{ scale: 0.88 }}
                         onClick={() => router.push("/")}
-                        className="w-11 h-11 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-center hover:bg-zinc-50 transition-colors shrink-0"
+                        className="w-11 h-11 rounded-2xl bg-white border border-zinc-200 shadow-sm flex items-center justify-center hover:bg-zinc-50 transition-colors shrink-0 cursor-pointer"
                     >
                         <ArrowLeft size={13} className="text-zinc-900" />
                     </motion.button>
@@ -153,9 +228,8 @@ function Page() {
                         <h1 className="text-zinc-900 text-xl font-black tracking-tight">
                             Book a Ride
                         </h1>
-
                         <p className="text-zinc-400 text-xs mt-0.5">
-                            Fill in the details below
+                            Fill in the trip details below
                         </p>
                     </div>
                     <div className="flex items-center gap-1.5 shrink-0">
@@ -187,7 +261,6 @@ function Page() {
                                 <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                                     <span className="text-white text-[9px] font-black">1</span>
                                 </div>
-
                                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
                                     Choose Vehicle
                                 </p>
@@ -196,7 +269,6 @@ function Page() {
                             <div className="grid grid-cols-2 gap-2.5">
                                 {VEHICLES.map((v, i) => {
                                     const active = vehicle === v.id
-
                                     return (
                                         <motion.div
                                             key={v.id}
@@ -205,7 +277,7 @@ function Page() {
                                             transition={{ delay: 0.07 + i * 0.05 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => setVehicle(v.id as VehicleType)}
-                                            className={`relative p-3.5 rounded-2xl border flex items-center gap-3 text-left transition-all duration-200 ${active
+                                            className={`relative p-3.5 rounded-2xl border flex items-center gap-3 text-left transition-all duration-200 cursor-pointer ${active
                                                 ? "bg-zinc-900 border-zinc-900 shadow-lg"
                                                 : "bg-zinc-50 border-zinc-200 hover:border-zinc-400"
                                                 }`}
@@ -221,10 +293,8 @@ function Page() {
                                             </div>
 
                                             <div className="min-w-0">
-                                                <p className={`text-sm font-bold truncate ${active ? "text-white" : "text-zinc-900"}`}
-                                                >{v.label}</p>
-                                                <p className={`text-[10px] truncate ${active ? "text-zinc-400" : "text-zinc-400"}`}
-                                                >{v.desc}</p>
+                                                <p className={`text-sm font-bold truncate ${active ? "text-white" : "text-zinc-900"}`}>{v.label}</p>
+                                                <p className={`text-[10px] truncate ${active ? "text-zinc-400" : "text-zinc-400"}`}>{v.desc}</p>
                                             </div>
                                             {active && (
                                                 <motion.div
@@ -232,8 +302,7 @@ function Page() {
                                                     animate={{ scale: 1 }}
                                                     className="absolute top-2.5 right-2.5"
                                                 >
-                                                    <CheckCircle size={13} className="text-white fill-white/20"
-                                                    />
+                                                    <CheckCircle size={13} className="text-white fill-white/20" />
                                                 </motion.div>
                                             )}
                                         </motion.div>
@@ -254,14 +323,12 @@ function Page() {
                                 <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                                     <span className="text-white text-[9px] font-black">2</span>
                                 </div>
-
                                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
                                     Mobile Number
                                 </p>
                             </div>
 
-                            <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 focus-within:border-zinc-900 focus-within:bg-white transition-all"
-                            >
+                            <div className="flex items-center gap-3 bg-zinc-50 border border-zinc-200 rounded-2xl px-4 py-3 focus-within:border-zinc-900 focus-within:bg-white transition-all">
                                 <div className="w-8 h-8 rounded-xl shrink-0 bg-zinc-200 flex items-center justify-center">
                                     <Phone size={14} className="text-zinc-600" />
                                 </div>
@@ -269,9 +336,9 @@ function Page() {
                                     type="tel"
                                     value={mobileNumber}
                                     onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ""))}
-                                    placeholder="Enter your mobile number"
+                                    placeholder="Enter 10-digit mobile number"
                                     inputMode="numeric"
-                                    maxLength={15}
+                                    maxLength={10}
                                     className="flex-1 bg-transparent text-sm font-semibold placeholder:text-zinc-400 outline-none"
                                 />
                                 <AnimatePresence>
@@ -290,7 +357,7 @@ function Page() {
                                 </AnimatePresence>
                             </div>
                             <p className="text-zinc-400 text-[10px] mt-1.5 ml-1">
-                                Ride updates will be sent to this number
+                                Driver & ride verification updates will be sent to this number
                             </p>
                         </motion.div>
 
@@ -306,7 +373,6 @@ function Page() {
                                 <div className="w-5 h-5 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                                     <span className="text-white text-[9px] font-black">3</span>
                                 </div>
-
                                 <p className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
                                     Pickup & Drop-off Location
                                 </p>
@@ -323,17 +389,18 @@ function Page() {
                                                 onChange={(e) => {
                                                     setpickUpLocation(e.target.value)
                                                     searchAddress(e.target.value, setPickUpSuggestions)
-                                                }
-                                                }
+                                                }}
                                                 value={pickUpLocation}
-                                                placeholder="Pickup location"
-                                                className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none"
+                                                placeholder="Enter pickup location"
+                                                rows={1}
+                                                className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none resize-none"
                                             />
                                             <motion.button
                                                 whileTap={{ scale: 0.88 }}
                                                 onClick={currentLocation}
                                                 disabled={locating}
-                                                className="w-8 h-8 rounded-xl bg-zinc-200 hover:bg-zinc-300 transition-colors flex items-center justify-center shrink-0"
+                                                title="Use current GPS location"
+                                                className="w-8 h-8 rounded-xl bg-zinc-200 hover:bg-zinc-300 transition-colors flex items-center justify-center shrink-0 cursor-pointer disabled:opacity-50"
                                             >
                                                 <LocateFixed size={14} className={`text-zinc-700 ${locating ? 'animate-spin' : ''}`} />
                                             </motion.button>
@@ -345,53 +412,42 @@ function Page() {
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
                                                     transition={{ duration: 0.2 }}
-                                                    className="absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-32 overflow-y-auto z-50"
+                                                    className="absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-48 overflow-y-auto z-50"
                                                 >
                                                     {(pickUpSuggestions ?? []).map((p, i) => (
                                                         <motion.div
-                                                            key={p.id}
+                                                            key={p.id || i}
                                                             initial={{ opacity: 0 }}
                                                             animate={{ opacity: 1 }}
                                                             transition={{ delay: i * 0.03 }}
                                                             onClick={() => {
-                                                                setpickUpLocation(suggestion(p))
+                                                                const text = suggestion(p)
+                                                                setpickUpLocation(text)
                                                                 setPickUpCountry(p.country ?? "")
                                                                 setpickUpLat(p.lat)
                                                                 setpickUpLon(p.lon)
                                                                 setPickUpSuggestions([])
                                                             }}
-                                                            className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0"
+                                                            className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0 cursor-pointer"
                                                         >
-                                                            <MapPin
-                                                                size={13}
-                                                                className="text-zinc-400 shrink-0"
-                                                            />
-
+                                                            <MapPin size={13} className="text-zinc-400 shrink-0" />
                                                             <span className="text-sm text-zinc-800 font-medium truncate">
                                                                 {suggestion(p)}
                                                             </span>
-
-                                                            <ChevronRight
-                                                                size={13}
-                                                                className="text-zinc-300 shrink-0 ml-auto"
-                                                            />
+                                                            <ChevronRight size={13} className="text-zinc-300 shrink-0 ml-auto" />
                                                         </motion.div>
                                                     ))}
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
-
                                     </div>
-
-
                                 </div>
-
 
                                 <div className="bg-zinc-50 border border-zinc-200 rounded-2xl overflow-visible">
                                     <div className="relative z-10">
                                         <div className="flex items-center gap-3 px-4 py-3.5 focus-within:bg-white rounded-t-2xl transition-colors">
                                             <div className="flex flex-col items-center shrink-0">
-                                                <div className="w-3 h-3 rounded-full bg-zinc-900 border-2 border-white shadow" />
+                                                <div className="w-3 h-3 rounded-full bg-red-500 border-2 border-white shadow" />
                                                 <div className="w-px h-5 bg-zinc-300 mt-1" />
                                             </div>
 
@@ -399,12 +455,12 @@ function Page() {
                                                 onChange={(e) => {
                                                     setDropLocation(e.target.value)
                                                     searchAddress(e.target.value, setDropSuggestions)
-                                                }
-                                                }
-                                                disabled={!pickUpCountry}
+                                                }}
+                                                disabled={!pickUpLocation.trim()}
                                                 value={dropLocation}
-                                                placeholder={pickUpCountry ? "Drop-off location" : "Enter pickup location first"}
-                                                className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none"
+                                                placeholder={pickUpLocation.trim() ? "Enter drop-off destination" : "Enter pickup location first"}
+                                                rows={1}
+                                                className="flex-1 bg-transparent text-sm font-semibold text-zinc-900 placeholder:text-zinc-400 outline-none resize-none disabled:opacity-40"
                                             />
                                         </div>
                                         <AnimatePresence>
@@ -414,47 +470,36 @@ function Page() {
                                                     animate={{ opacity: 1, y: 0, scale: 1 }}
                                                     exit={{ opacity: 0, y: -4, scale: 0.98 }}
                                                     transition={{ duration: 0.2 }}
-                                                    className="absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-32 overflow-y-auto z-50"
+                                                    className="absolute left-0 right-0 top-full mt-1 bg-white border border-zinc-200 rounded-2xl shadow-xl max-h-48 overflow-y-auto z-50"
                                                 >
                                                     {(dropSuggestions ?? []).map((p, i) => (
                                                         <motion.div
-                                                            key={p.id}
+                                                            key={p.id || i}
                                                             initial={{ opacity: 0 }}
                                                             animate={{ opacity: 1 }}
                                                             transition={{ delay: i * 0.03 }}
                                                             onClick={() => {
-                                                                setDropLocation(suggestion(p))
+                                                                const text = suggestion(p)
+                                                                setDropLocation(text)
                                                                 setdropLat(p.lat)
                                                                 setdropLon(p.lon)
                                                                 setDropSuggestions([])
                                                             }}
-                                                            className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0"
+                                                            className="flex items-center gap-3 w-full px-4 py-3 text-left hover:bg-zinc-50 transition-colors border-b border-zinc-100 last:border-0 cursor-pointer"
                                                         >
-                                                            <MapPin
-                                                                size={13}
-                                                                className="text-zinc-400 shrink-0"
-                                                            />
-
+                                                            <MapPin size={13} className="text-zinc-400 shrink-0" />
                                                             <span className="text-sm text-zinc-800 font-medium truncate">
                                                                 {suggestion(p)}
                                                             </span>
-
-                                                            <ChevronRight
-                                                                size={13}
-                                                                className="text-zinc-300 shrink-0 ml-auto"
-                                                            />
+                                                            <ChevronRight size={13} className="text-zinc-300 shrink-0 ml-auto" />
                                                         </motion.div>
                                                     ))}
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
-
                                     </div>
-
-
                                 </div>
                             </div>
-
                         </motion.div>
 
                         <div className="h-px bg-zinc-200"></div>
@@ -467,19 +512,23 @@ function Page() {
                         >
                             <motion.button
                                 whileTap={{ scale: 0.97 }}
-                                whileHover={canContinue ? { scale: 1.02 } : {}}
-                                disabled={!canContinue}
-                                onClick={() => {
-                                    router.push(`/user/search?pickUp=${encodeURIComponent(pickUpLocation)}&drop=${encodeURIComponent(dropLocation)}&vehicle=${vehicle}&mobile=${encodeURIComponent(mobileNumber)}&pickUpLat=${pickUpLat}&pickUpLon=${pickUpLon}&dropLat=${dropLat}&dropLon=${dropLon}`)
-                                }}
-                                className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-black disabled:opacity-35 text-white font-black text-sm tracking-wide flex items-center justify-center gap-2.5 transition-colors shadow-lg disabled:shadow-none"
+                                whileHover={canContinue && !submitting ? { scale: 1.02 } : {}}
+                                disabled={!canContinue || submitting}
+                                onClick={handleContinue}
+                                className="w-full h-14 rounded-2xl bg-zinc-900 hover:bg-black disabled:opacity-35 text-white font-black text-sm tracking-wide flex items-center justify-center gap-2.5 transition-colors shadow-lg disabled:shadow-none cursor-pointer disabled:cursor-not-allowed"
                             >
-                                <span>Continue</span>
+                                {submitting ? (
+                                    <>
+                                        <CircleDashed size={18} className="animate-spin text-white" />
+                                        <span>Locating & Plotting Route...</span>
+                                    </>
+                                ) : (
+                                    <span>Continue to Find Vehicles</span>
+                                )}
                             </motion.button>
                         </motion.div>
                     </div>
                 </div>
-
             </motion.div>
         </div>
     )

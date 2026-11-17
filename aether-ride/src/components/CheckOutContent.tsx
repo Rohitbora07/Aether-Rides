@@ -73,11 +73,11 @@ function CheckOutContent() {
                 dropAddress: drop,
                 pickUpCoords: {
                     type: "Point",
-                    coordinates: [pickUpLon, pickUpLat]
+                    coordinates: [Number(pickUpLon) || 0, Number(pickUpLat) || 0]
                 },
                 dropCoords: {
                     type: "Point",
-                    coordinates: [dropLon, dropLat]
+                    coordinates: [Number(dropLon) || 0, Number(dropLat) || 0]
                 },
                 mobileNumber: mobile,
                 fare: Number(fare)
@@ -143,7 +143,7 @@ function CheckOutContent() {
             socket.off("accept-booking")
             socket.off("reject-booking")
         }
-    })
+    }, [])
 
     const loadRazorpayScript = () => {
         return new Promise((resolve) => {
