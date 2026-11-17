@@ -209,8 +209,12 @@ function SearchMap({ pickUp, drop, initialPickUp, initialDrop, onChange, onDista
                 zoomControl={false}
             >
                 <TileLayer
-                    attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url={
+                        process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
+                            ? `https://maps.geoapify.com/v1/tile/osm-bright-smooth/{z}/{x}/{y}.png?apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY}`
+                            : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    }
                 />
                 {p1 && p2 && <FitBounds p1={p1} p2={p2} />}
                 {p1 && (

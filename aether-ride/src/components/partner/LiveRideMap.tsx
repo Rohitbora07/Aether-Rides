@@ -151,9 +151,12 @@ function LiveRideMap({ driverLocation, pickUpLocation, dropLocation, map_status,
                         zoomControl={false}
                     >
                         <TileLayer
-                            attribution='&copy; <a href="https://carto.com/">CARTO</a> contributors'
-                            url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png"
-        
+                            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                            url={
+                                process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY
+                                    ? `https://maps.geoapify.com/v1/tile/osm-bright-smooth/{z}/{x}/{y}.png?apiKey=${process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY}`
+                                    : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                            }
                         />
 
                         {showPickMarker && <Marker
