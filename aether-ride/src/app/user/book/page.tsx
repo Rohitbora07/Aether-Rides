@@ -50,7 +50,6 @@ function Page() {
     const [pickUpLocation, setpickUpLocation] = useState("")
     const [dropLocation, setDropLocation] = useState("")
     const [mobileNumber, setMobileNumber] = useState("")
-    const [pickUpCountry, setPickUpCountry] = useState("")
     const [pickUpLat, setpickUpLat] = useState<number | undefined>()
     const [pickUpLon, setpickUpLon] = useState<number | undefined>()
     const [dropLat, setdropLat] = useState<number | undefined>()
@@ -83,7 +82,6 @@ function Page() {
                     if (data.features && data.features.length > 0) {
                         const p = data.features[0].properties
                         setpickUpLocation(p.formatted || `${coords.latitude}, ${coords.longitude}`)
-                        setPickUpCountry(p.country || "")
                     } else {
                         setpickUpLocation(`${coords.latitude}, ${coords.longitude}`)
                     }
@@ -423,7 +421,6 @@ function Page() {
                                                             onClick={() => {
                                                                 const text = suggestion(p)
                                                                 setpickUpLocation(text)
-                                                                setPickUpCountry(p.country ?? "")
                                                                 setpickUpLat(p.lat)
                                                                 setpickUpLon(p.lon)
                                                                 setPickUpSuggestions([])
